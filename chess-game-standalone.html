@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גלאי איומים בשחמט לילדים</title>
+    
+    <!-- Chessboard.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+        }
+
+        .board-wrapper {
+            position: relative;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #board {
+            width: 500px;
+            height: 500px;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 500px;
+            min-width: 500px;
+            max-width: 500px;
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        /* Two column layout */
+        .two-column-row {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        /* Compact turn indicator */
+        .turn-indicator-compact {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .turn-icon {
+            font-size: 1.5em;
+            line-height: 1;
+        }
+
+        #currentTurnText {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Collapsible sections */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 0;
+            user-select: none;
+        }
+
+        .collapsible-header:hover {
+            background: rgba(0,0,0,0.05);
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+
+        .collapse-arrow {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .collapse-arrow.rotated {
+            transform: rotate(180deg);
+        }
+
+        .difficulty-selector.collapsed,
+        .instructions-content.collapsed {
+            display: none;
+        }
+
+        .difficulty-selector {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .difficulty-selector label {
+            font-size: 0.9em;
+            line-height: 1.3;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .control-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .toggle-switch input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        .label-text {
+            margin-left: 70px;
+            font-weight: 600;
+        }
+
+        .threat-options {
+            margin-top: 15px;
+        }
+
+        .threat-options label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .threat-options label:hover {
+            background: #f5f5f5;
+        }
+
+        .threat-options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .turn-indicator {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #d32f2f;
+            text-align: center;
+            min-height: 30px;
+        }
+
+        .captured-pieces {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .captured-row {
+            font-size: 1.8em;
+            min-height: 35px;
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .info-panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .info-panel ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-panel li {
+            padding: 8px 0;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Threat indicators */
+        .threat-indicator {
+            z-index: 10;
+            border-radius: 4px;
+            animation: pulse 2s infinite;
+        }
+
+        .threatened-piece {
+            background: rgba(255, 0, 0, 0.4);
+            border: 3px solid rgba(255, 0, 0, 0.8);
+        }
+
+        .attacking-piece {
+            background: rgba(255, 193, 7, 0.3);
+            border: 3px solid rgba(255, 193, 7, 0.8);
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 0.4;
+            }
+            100% {
+                opacity: 0.8;
+            }
+        }
+
+        /* Square highlighting for tap-to-see-threats */
+        .square-highlight {
+            border-radius: 4px;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+
+        .selected-square {
+            background: rgba(0, 123, 255, 0.4);
+            border: 3px solid rgba(0, 123, 255, 0.8);
+        }
+
+        .threatened-square {
+            background: rgba(255, 0, 0, 0.2);
+            border-style: solid;
+            border-color: rgba(255, 0, 0, 0.9);
+        }
+
+        .square-attacker {
+            background: rgba(255, 165, 0, 0.3);
+            border: 3px solid rgba(255, 165, 0, 0.8);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 300px;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h3 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .color-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            background: #f8f8f8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-width: 100px;
+        }
+
+        .color-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .white-btn {
+            color: #333;
+        }
+
+        .white-btn:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+        }
+
+        .black-btn {
+            color: #333;
+        }
+
+        .black-btn:hover {
+            border-color: #333;
+            background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+        }
+
+        .piece-icon {
+            font-size: 2.5em;
+            line-height: 1;
+        }
+
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .game-container {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #board {
+                width: 350px;
+                height: 350px;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .two-column-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .turn-indicator-compact {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 גלאי איומים בשחמט 🎯</h1>
+            <p class="subtitle">למדו לזהות איומים ולהגן על הכלים שלכם!</p>
+        </header>
+        
+        <div class="game-container">
+            <div class="board-wrapper">
+                <div id="board"></div>
+                <div class="threat-overlay" id="threatOverlay"></div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>בקרות משחק</h3>
+                    <button id="resetBtn" class="btn btn-primary">🔄 משחק חדש</button>
+                    <button id="undoBtn" class="btn btn-secondary">↩️ בטל מהלך</button>
+                </div>
+                
+                <div class="control-section">
+                    <div class="two-column-row">
+                        <div class="column">
+                            <h3>תצוגת איומים</h3>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showThreats">
+                                <span class="slider"></span>
+                            </label>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                                הפעילו ואז לחצו על ריבוע לרמז. הרמז נסגר אוטומטית.
+                            </p>
+                        </div>
+                        
+                        <div class="column">
+                            <h3>מצב המשחק</h3>
+                            <div class="turn-indicator-compact">
+                                <span id="currentTurnIcon" class="turn-icon">♕</span>
+                                <span id="currentTurnText">תור הלבן</span>
+                            </div>
+                            <div class="status" id="gameStatus"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="collapsible-header" onclick="toggleDifficulty()">
+                        <h3>⚙️ רמת המחשב</h3>
+                        <span class="collapse-arrow" id="collapseArrow">▼</span>
+                    </div>
+                    <div class="difficulty-selector collapsed" id="difficultySelector">
+                        <label>
+                            <input type="radio" name="difficulty" value="easy" checked>
+                            🟢 קל - המחשב עושה מהלכים אקראיים
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="medium">
+                            🟡 בינוני - המחשב מחפש מהלכים טובים
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="hard">
+                            🔴 קשה - המחשב מנסה לנצח
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>כלים שנלכדו</h3>
+                    <div class="captured-pieces">
+                        <div id="whiteCaptured" class="captured-row"></div>
+                        <div id="blackCaptured" class="captured-row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="collapsible-header" onclick="toggleInstructions()">
+                <h3>🎓 איך להשתמש</h3>
+                <span class="collapse-arrow" id="instructionsArrow">▼</span>
+            </div>
+            <div class="instructions-content collapsed" id="instructionsContent">
+                <ul>
+                    <li>🔴 לחצו על כל ריבוע כדי לראות איזה כלים מאיימים עליו</li>
+                    <li>📍 ככל שיותר כלים מאיימים, הגבול האדום יהיה עבה יותר</li>
+                    <li>🎯 הריבוע שנבחר מסומן בכחול</li>
+                    <li>♟️ גררו כלים כדי לבצע מהלכים</li>
+                    <li>🤖 בחרו צבע ושחקו נגד המחשב</li>
+                    <li>⚙️ בחרו רמת קושי: קל, בינוני או קשה</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Color Selection Modal -->
+    <div id="colorModal" class="modal">
+        <div class="modal-content">
+            <h3>בחרו צבע לשחק</h3>
+            <div class="color-options">
+                <button id="playWhite" class="color-btn white-btn">
+                    <span class="piece-icon">♔</span>
+                    <span>לבן</span>
+                </button>
+                <button id="playBlack" class="color-btn black-btn">
+                    <span class="piece-icon">♚</span>
+                    <span>שחור</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- jQuery (required by chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Chess.js for game logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
+    <!-- Chessboard.js for board UI -->
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    
+    <script>
+        // Initialize chess game and board
+        let game = new Chess();
+        let board = null;
+        let $board = $('#board');
+        let showThreats = false; // Start with threats off
+        let debugMode = false; // Set to true to see debug info
+        let moveHistory = [];
+        let gameMode = 'computer'; // Always play against computer
+        let difficulty = 'easy'; // 'easy', 'medium', 'hard'
+        let isComputerTurn = false;
+        let selectedSquare = null; // For tap-to-see-threats feature
+        let showingSquareThreats = false;
+        let playerColor = 'white'; // Player's color choice
+
+        // Configuration for chessboard
+        const config = {
+            draggable: true,
+            position: 'empty',
+            onDragStart: onDragStart,
+            onDrop: onDrop,
+            onSnapEnd: onSnapEnd,
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+        };
+
+        // Initialize the board
+        $(document).ready(function() {
+            board = Chessboard('board', config);
+            updateStatus();
+            
+            // Add click handlers to board squares for tap-to-see-threats
+            setTimeout(() => {
+                addSquareClickHandlers();
+            }, 1000);
+            
+            // Event listeners
+            $('#resetBtn').on('click', showColorSelectionModal);
+            $('#undoBtn').on('click', undoMove);
+            $('#showThreats').on('change', function() {
+                showThreats = this.checked;
+                if (!showThreats) {
+                    clearSquareThreats();
+                }
+            });
+            $('input[name="difficulty"]').on('change', function() {
+                difficulty = this.value;
+            });
+            
+            // Modal event listeners
+            $('#playWhite').on('click', () => startNewGame('white'));
+            $('#playBlack').on('click', () => startNewGame('black'));
+        });
+
+        // Check if a piece can be dragged
+        function onDragStart(source, piece, position, orientation) {
+            // Don't allow moves if game is over
+            if (game.game_over()) return false;
+            
+            // Don't allow moves during computer's turn
+            if (isComputerTurn) return false;
+            
+            // In computer mode, only allow player's color pieces to be moved
+            const playerPieces = playerColor === 'white' ? /^w/ : /^b/;
+            if (gameMode === 'computer' && !piece.match(playerPieces)) {
+                return false;
+            }
+            
+            // Only pick up pieces for the side to move
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        // Handle piece drop
+        function onDrop(source, target) {
+            // Save current position for undo
+            moveHistory.push(game.fen());
+            
+            // Try to make the move
+            let move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // Always promote to queen for simplicity
+            });
+            
+            // If illegal move, snap back
+            if (move === null) {
+                moveHistory.pop();
+                return 'snapback';
+            }
+            
+            updateStatus();
+            updateCapturedPieces();
+            
+            // Clear any threat displays after a move
+            clearSquareThreats();
+            
+            // If it's computer's turn, make computer move
+            if (gameMode === 'computer' && game.turn() === 'b' && !game.game_over()) {
+                setTimeout(makeComputerMove, 500); // Small delay for better UX
+            }
+        }
+
+        // Update board position after the piece snap
+        function onSnapEnd() {
+            board.position(game.fen());
+            // Re-add click handlers after board update
+            setTimeout(() => addSquareClickHandlers(), 100);
+        }
+
+        // Reset the game
+        function resetGame() {
+            game.reset();
+            board.start();
+            moveHistory = [];
+            clearSquareThreats();
+            
+            // Turn off threat toggle on new game
+            showThreats = false;
+            $('#showThreats').prop('checked', false);
+            
+            updateStatus();
+            updateCapturedPieces();
+            // Re-add click handlers after board reset
+            setTimeout(() => addSquareClickHandlers(), 100);
+        }
+
+        // Undo last move
+        function undoMove() {
+            if (moveHistory.length > 0) {
+                game.load(moveHistory.pop());
+                board.position(game.fen());
+                clearSquareThreats();
+                updateStatus();
+                updateCapturedPieces();
+                // Re-add click handlers after board update
+                setTimeout(() => addSquareClickHandlers(), 100);
+            }
+        }
+
+        // Update game status display
+        function updateStatus() {
+            let status = '';
+            let moveColor = game.turn() === 'w' ? 'לבן' : 'שחור';
+            let isWhiteTurn = game.turn() === 'w';
+            
+            // Update turn icon and text
+            $('#currentTurnIcon').html(isWhiteTurn ? '♕' : '♛'); // White queen vs Black queen
+            $('#currentTurnIcon').css('color', isWhiteTurn ? '#fff' : '#000');
+            $('#currentTurnIcon').css('text-shadow', isWhiteTurn ? '1px 1px 2px #000' : '1px 1px 2px #fff');
+            $('#currentTurnText').html('תור ה' + moveColor);
+            
+            // Checkmate
+            if (game.in_checkmate()) {
+                status = 'המשחק נגמר! ' + (game.turn() === 'w' ? 'שחור' : 'לבן') + ' ניצח! 🎉';
+            }
+            // Draw
+            else if (game.in_draw()) {
+                status = 'המשחק נגמר - תיקו! 🤝';
+            }
+            // Check
+            else if (game.in_check()) {
+                status = '⚠️ ' + moveColor + ' בשח!';
+            }
+            // Game still on
+            else {
+                status = '';
+            }
+            
+            $('#gameStatus').html(status);
+        }
+
+        // Removed old threat visualization functions - now using tap-to-see-threats only
+
+        // Update captured pieces display
+        function updateCapturedPieces() {
+            const captured = getCapturedPieces();
+            
+            // Display captured white pieces (with white symbols)
+            const whiteSymbols = captured.white.map(p => getPieceSymbol(p, 'white')).join(' ');
+            $('#whiteCaptured').html(whiteSymbols ? 'לבן שנלכד: ' + whiteSymbols : '');
+            
+            // Display captured black pieces (with black symbols)
+            const blackSymbols = captured.black.map(p => getPieceSymbol(p, 'black')).join(' ');
+            $('#blackCaptured').html(blackSymbols ? 'שחור שנלכד: ' + blackSymbols : '');
+        }
+
+        // Get lists of captured pieces
+        function getCapturedPieces() {
+            const history = game.history({ verbose: true });
+            const captured = { white: [], black: [] };
+            
+            history.forEach(move => {
+                if (move.captured) {
+                    // The color of the captured piece is opposite to the player who made the move
+                    const capturedColor = move.color === 'w' ? 'black' : 'white';
+                    captured[capturedColor].push(move.captured);
+                }
+            });
+            
+            return captured;
+        }
+
+        // Convert piece code to symbol
+        function getPieceSymbol(piece, color) {
+            const whiteSymbols = {
+                'p': '♙',
+                'n': '♘',
+                'b': '♗',
+                'r': '♖',
+                'q': '♕',
+                'k': '♔'
+            };
+            const blackSymbols = {
+                'p': '♟',
+                'n': '♞',
+                'b': '♝',
+                'r': '♜',
+                'q': '♛',
+                'k': '♚'
+            };
+            
+            if (color === 'white') {
+                return whiteSymbols[piece] || piece;
+            } else {
+                return blackSymbols[piece] || piece;
+            }
+        }
+
+        // Computer AI Functions
+        function makeComputerMove() {
+            const computerColor = playerColor === 'white' ? 'b' : 'w';
+            if (game.game_over() || game.turn() !== computerColor) return;
+            
+            isComputerTurn = true;
+            const moves = game.moves({ verbose: true });
+            
+            if (moves.length === 0) {
+                isComputerTurn = false;
+                return;
+            }
+            
+            let selectedMove;
+            
+            switch (difficulty) {
+                case 'easy':
+                    selectedMove = getRandomMove(moves);
+                    break;
+                case 'medium':
+                    selectedMove = getMediumMove(moves);
+                    break;
+                case 'hard':
+                    selectedMove = getHardMove(moves);
+                    break;
+                default:
+                    selectedMove = getRandomMove(moves);
+            }
+            
+            // Make the move
+            if (selectedMove) {
+                game.move(selectedMove);
+                board.position(game.fen());
+                
+                updateStatus();
+                updateCapturedPieces();
+                // Re-add click handlers after board update
+                setTimeout(() => addSquareClickHandlers(), 100);
+            }
+            
+            isComputerTurn = false;
+        }
+
+        // Easy: Random move
+        function getRandomMove(moves) {
+            return moves[Math.floor(Math.random() * moves.length)];
+        }
+
+        // Medium: Prefer captures and checks
+        function getMediumMove(moves) {
+            // First priority: captures
+            const captures = moves.filter(move => move.captured);
+            if (captures.length > 0) {
+                return captures[Math.floor(Math.random() * captures.length)];
+            }
+            
+            // Second priority: checks
+            const checks = moves.filter(move => {
+                game.move(move);
+                const inCheck = game.in_check();
+                game.undo();
+                return inCheck;
+            });
+            if (checks.length > 0) {
+                return checks[Math.floor(Math.random() * checks.length)];
+            }
+            
+            // Otherwise random
+            return getRandomMove(moves);
+        }
+
+        // Hard: Try to find best moves (simple evaluation)
+        function getHardMove(moves) {
+            let bestMoves = [];
+            let bestScore = -Infinity;
+            
+            moves.forEach(move => {
+                game.move(move);
+                let score = evaluatePosition();
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMoves = [move];
+                } else if (score === bestScore) {
+                    bestMoves.push(move);
+                }
+                
+                game.undo();
+            });
+            
+            return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+        }
+
+        // Simple position evaluation
+        function evaluatePosition() {
+            const pieceValues = {
+                'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0
+            };
+            
+            let score = 0;
+            const boardArray = game.board();
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = boardArray[row][col];
+                    if (piece) {
+                        const value = pieceValues[piece.type] || 0;
+                        if (piece.color === 'b') {
+                            score += value;
+                        } else {
+                            score -= value;
+                        }
+                    }
+                }
+            }
+            
+            // Bonus for checkmate
+            if (game.in_checkmate()) {
+                score += game.turn() === 'w' ? 1000 : -1000;
+            }
+            
+            // Bonus for check
+            if (game.in_check()) {
+                score += game.turn() === 'w' ? -10 : 10;
+            }
+            
+            return score;
+        }
+
+        // Tap-to-see-threats functionality
+        function addSquareClickHandlers() {
+            // Add click handlers to all squares - much simpler now since toggle turns off after use
+            for (let file of 'abcdefgh') {
+                for (let rank of '12345678') {
+                    const square = file + rank;
+                    const $square = $board.find('.square-' + square);
+                    
+                    $square.off('click').on('click', function(e) {
+                        // Only show threats if the toggle is enabled
+                        if (!showThreats) return;
+                        
+                        // Show threats and automatically disable toggle
+                        showThreatsToSquare(square);
+                    });
+                }
+            }
+        }
+
+        function showThreatsToSquare(square) {
+            clearSquareThreats();
+            selectedSquare = square;
+            showingSquareThreats = true;
+            
+            // Find all pieces that can attack this square
+            const attackers = getSquareAttackers(square);
+            
+            // Highlight the selected square with red border based on threat count
+            if (attackers.length > 0) {
+                // The selected square gets a red border with thickness based on threat count
+                addSquareHighlight(square, 'threatened-square', attackers.length);
+                
+                // Highlight attacking pieces
+                attackers.forEach(attackerSquare => {
+                    addSquareHighlight(attackerSquare, 'square-attacker', 0);
+                });
+                
+                // Show info about threats
+                const piece = game.get(square);
+                const pieceText = piece ? `${piece.color === 'w' ? 'לבן' : 'שחור'} ${getPieceText(piece.type)}` : 'ריק';
+                const currentPlayer = game.turn();
+                const opponentText = currentPlayer === 'w' ? 'שחור' : 'לבן';
+                console.log(`כיכר ${square} (${pieceText}) מאוימת על ידי ${attackers.length} כלים ${opponentText}:`, attackers);
+            } else {
+                // No threats - just show blue selection
+                addSquareHighlight(square, 'selected-square', 0);
+                
+                const currentPlayer = game.turn();
+                const opponentText = currentPlayer === 'w' ? 'שחור' : 'לבן';
+                console.log(`כיכר ${square} לא מאוימת על ידי כלים ${opponentText}`);
+            }
+            
+            // Turn off the toggle after showing threats (makes kid "work" for the hint)
+            showThreats = false;
+            $('#showThreats').prop('checked', false);
+        }
+
+        function getSquareAttackers(square) {
+            const attackers = [];
+            const currentPlayer = game.turn();
+            const opponent = currentPlayer === 'w' ? 'b' : 'w';
+            
+            // We need to check what opponent pieces are DEFENDING this square
+            // This means: if we put a piece there, what could capture it?
+            
+            // Save current game state
+            const originalFen = game.fen();
+            
+            // Get all opponent pieces and check if they can attack this square
+            const board = game.board();
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = board[row][col];
+                    if (piece && piece.color === opponent) {
+                        const fromSquare = String.fromCharCode(97 + col) + (8 - row);
+                        
+                        // Check if this piece defends/can attack the target square
+                        if (canPieceDefendSquare(piece, fromSquare, square, opponent)) {
+                            attackers.push(fromSquare);
+                        }
+                    }
+                }
+            }
+            
+            return attackers;
+        }
+
+        // Helper function to check if a piece can defend/attack a square
+        function canPieceDefendSquare(piece, from, to, color) {
+            // We need to check if this piece CONTROLS the square (can attack it)
+            // regardless of what's currently on the target square
+            
+            // Special handling for pawns - they control diagonal squares
+            if (piece.type === 'p') {
+                const fromFile = from.charCodeAt(0);
+                const fromRank = parseInt(from[1]);
+                const toFile = to.charCodeAt(0);
+                const toRank = parseInt(to[1]);
+                
+                // Check if it's a diagonal attack (one file away, one rank in correct direction)
+                const fileDiff = Math.abs(toFile - fromFile);
+                const rankDiff = toRank - fromRank;
+                
+                if (color === 'w') {
+                    // White pawns control diagonally upward squares
+                    return fileDiff === 1 && rankDiff === 1;
+                } else {
+                    // Black pawns control diagonally downward squares  
+                    return fileDiff === 1 && rankDiff === -1;
+                }
+            }
+            
+            // For other pieces, we need to check if they can attack that square
+            // We'll temporarily place an enemy piece there and see if they can capture it
+            const originalFen = game.fen();
+            
+            try {
+                // Create a temporary position with an enemy piece on the target square
+                const tempGame = new Chess(originalFen);
+                
+                // Remove whatever is on the target square
+                const targetPiece = tempGame.get(to);
+                if (targetPiece) {
+                    tempGame.remove(to);
+                }
+                
+                // Place an enemy piece there (opposite color to the attacking piece)
+                const enemyColor = color === 'w' ? 'b' : 'w';
+                tempGame.put({ type: 'p', color: enemyColor }, to);
+                
+                // Switch turns to the attacking piece's color
+                const fenParts = tempGame.fen().split(' ');
+                fenParts[1] = color;
+                const testFen = fenParts.join(' ');
+                
+                tempGame.load(testFen);
+                
+                // Try to capture the piece on the target square
+                const move = tempGame.move({
+                    from: from,
+                    to: to,
+                    promotion: 'q'
+                });
+                
+                return move !== null;
+                
+            } catch (e) {
+                // Something went wrong, return false
+                return false;
+            }
+        }
+
+        function clearSquareThreats() {
+            $('.square-highlight').remove();
+            selectedSquare = null;
+            showingSquareThreats = false;
+        }
+
+        function addSquareHighlight(square, className, threatCount) {
+            const $square = $board.find('.square-' + square);
+            const position = $square.position();
+            
+            if (!position) return;
+            
+            const highlight = $('<div>');
+            highlight.addClass('square-highlight');
+            highlight.addClass(className);
+            
+            // Calculate border thickness based on threat count
+            let borderThickness = 3;
+            if (className === 'threatened-square') {
+                // For threatened squares: 3px per threat (1 threat = 3px, 2 threats = 6px, etc)
+                borderThickness = Math.min(threatCount * 3, 15);
+            }
+            
+            highlight.css({
+                position: 'absolute',
+                top: position.top + 'px',
+                left: position.left + 'px',
+                width: $square.width() + 'px',
+                height: $square.height() + 'px',
+                pointerEvents: 'none',
+                zIndex: 3, // Lower z-index to not interfere with pieces
+                borderWidth: borderThickness + 'px',
+                boxSizing: 'border-box'
+            });
+            
+            $board.append(highlight);
+        }
+
+        function getPieceText(pieceType) {
+            const pieces = {
+                'p': 'רגלי',
+                'n': 'סוס',
+                'b': 'רץ',
+                'r': 'צריח',
+                'q': 'מלכה',
+                'k': 'מלך'
+            };
+            return pieces[pieceType] || pieceType;
+        }
+
+        // Toggle collapsible difficulty section
+        window.toggleDifficulty = function() {
+            const selector = document.getElementById('difficultySelector');
+            const arrow = document.getElementById('collapseArrow');
+            
+            if (selector.classList.contains('collapsed')) {
+                selector.classList.remove('collapsed');
+                arrow.textContent = '▲';
+            } else {
+                selector.classList.add('collapsed'); 
+                arrow.textContent = '▼';
+            }
+        }
+
+        window.toggleInstructions = function() {
+            const content = document.getElementById('instructionsContent');
+            const arrow = document.getElementById('instructionsArrow');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                arrow.textContent = '▲';
+            } else {
+                content.classList.add('collapsed'); 
+                arrow.textContent = '▼';
+            }
+        }
+
+        // Show color selection modal
+        function showColorSelectionModal() {
+            $('#colorModal').show();
+        }
+
+        // Start new game with selected color
+        function startNewGame(color) {
+            playerColor = color;
+            
+            // Hide modal
+            $('#colorModal').hide();
+            
+            // Reset game
+            game.reset();
+            
+            // Set board orientation based on player color
+            board.orientation(color);
+            board.start();
+            
+            moveHistory = [];
+            clearSquareThreats();
+            
+            // Turn off threat toggle on new game
+            showThreats = false;
+            $('#showThreats').prop('checked', false);
+            
+            updateStatus();
+            updateCapturedPieces();
+            
+            // Re-add click handlers after board reset
+            setTimeout(() => addSquareClickHandlers(), 100);
+            
+            // If player chose black, computer makes first move
+            if (color === 'black') {
+                setTimeout(makeComputerMove, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
