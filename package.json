@@ -1,0 +1,20 @@
+{
+  "name": "chess-threat-visualizer",
+  "version": "1.0.0",
+  "description": "Chess threat visualizer for kids - helps learn to identify and protect against threats",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build-standalone.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "serve": "npx http-server -p 8080"
+  },
+  "keywords": ["chess", "education", "kids", "threats", "visualization"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

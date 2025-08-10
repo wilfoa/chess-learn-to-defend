@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גלאי איומים בשחמט לילדים</title>
+    
+    <!-- Chessboard.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 גלאי איומים בשחמט 🎯</h1>
+            <p class="subtitle">למדו לזהות איומים ולהגן על הכלים שלכם!</p>
+        </header>
+        
+        <div class="game-container">
+            <div class="board-wrapper">
+                <div id="board"></div>
+                <div class="threat-overlay" id="threatOverlay"></div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-section">
+                    <h3>בקרות משחק</h3>
+                    <button id="resetBtn" class="btn btn-primary">🔄 משחק חדש</button>
+                    <button id="undoBtn" class="btn btn-secondary">↩️ בטל מהלך</button>
+                    <button id="saveBtn" class="btn btn-secondary">💾 שמור משחק</button>
+                    <button id="loadBtn" class="btn btn-secondary">📁 טען משחק</button>
+                </div>
+                
+                <div class="control-section">
+                    <div class="two-column-row">
+                        <div class="column">
+                            <h3>תצוגת איומים</h3>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="showThreats">
+                                <span class="slider"></span>
+                            </label>
+                            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                                הפעילו ואז לחצו על ריבוע לרמז. הרמז נסגר אוטומטית.
+                            </p>
+                        </div>
+                        
+                        <div class="column">
+                            <h3>מצב המשחק</h3>
+                            <div class="turn-indicator-compact">
+                                <span id="currentTurnIcon" class="turn-icon">♕</span>
+                                <span id="currentTurnText">תור הלבן</span>
+                            </div>
+                            <div class="status" id="gameStatus"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <div class="collapsible-header" onclick="toggleDifficulty()">
+                        <h3>⚙️ רמת המחשב</h3>
+                        <span class="collapse-arrow" id="collapseArrow">▼</span>
+                    </div>
+                    <div class="difficulty-selector collapsed" id="difficultySelector">
+                        <label>
+                            <input type="radio" name="difficulty" value="easy" checked>
+                            🟢 קל - המחשב עושה מהלכים אקראיים
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="medium">
+                            🟡 בינוני - המחשב מחפש מהלכים טובים
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="hard">
+                            🔴 קשה - המחשב מנסה לנצח
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>כלים שנלכדו</h3>
+                    <div class="captured-pieces">
+                        <div id="whiteCaptured" class="captured-row"></div>
+                        <div id="blackCaptured" class="captured-row"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="collapsible-header" onclick="toggleInstructions()">
+                <h3>🎓 איך להשתמש</h3>
+                <span class="collapse-arrow" id="instructionsArrow">▼</span>
+            </div>
+            <div class="instructions-content collapsed" id="instructionsContent">
+                <ul>
+                    <li>🔴 לחצו על כל ריבוע כדי לראות איזה כלים מאיימים עליו</li>
+                    <li>📍 ככל שיותר כלים מאיימים, הגבול האדום יהיה עבה יותר</li>
+                    <li>🎯 הריבוע שנבחר מסומן בכחול</li>
+                    <li>♟️ גררו כלים כדי לבצע מהלכים</li>
+                    <li>🤖 בחרו צבע ושחקו נגד המחשב</li>
+                    <li>⚙️ בחרו רמת קושי: קל, בינוני או קשה</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Color Selection Modal -->
+    <div id="colorModal" class="modal">
+        <div class="modal-content">
+            <h3>בחרו צבע לשחק</h3>
+            <div class="color-options">
+                <button id="playWhite" class="color-btn white-btn">
+                    <span class="piece-icon">♔</span>
+                    <span>לבן</span>
+                </button>
+                <button id="playBlack" class="color-btn black-btn">
+                    <span class="piece-icon">♚</span>
+                    <span>שחור</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- jQuery (required by chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Chess.js for game logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
+    <!-- Chessboard.js for board UI -->
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    
+    <!-- Our custom chess logic -->
+    <script src="app.js"></script>
+</body>
+</html>
