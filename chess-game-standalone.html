@@ -490,10 +490,11 @@ input:checked + .slider:before {
     }
 }
 
+/* Mobile optimizations */
 @media (max-width: 768px) {
-    #board {
-        width: 350px;
-        height: 350px;
+    body {
+        padding: 10px;
+        overflow-x: hidden;
     }
     
     header h1 {
@@ -503,20 +504,143 @@ input:checked + .slider:before {
     .game-container {
         flex-direction: column;
         align-items: center;
+        gap: 15px;
     }
     
+    /* Mobile board container - prevent scrolling and make touch-friendly */
+    .board-wrapper {
+        width: 100vw;
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 15px;
+        position: relative;
+        touch-action: none; /* Prevent scroll on touch */
+        -webkit-user-select: none; /* Prevent text selection */
+        user-select: none;
+    }
+    
+    #board {
+        width: 100%;
+        max-width: 350px;
+        height: auto;
+        aspect-ratio: 1; /* Keep square ratio */
+        margin: 0 auto;
+    }
+    
+    /* Controls take full width on mobile and stack below board */
     .controls {
         width: 100%;
         max-width: 400px;
+        min-width: unset;
+        order: 2; /* Ensure controls come after board */
+    }
+    
+    /* Optimize buttons for mobile touch */
+    .btn {
+        padding: 15px 20px;
+        font-size: 16px;
+        margin: 8px 5px;
+        min-height: 44px; /* iOS touch target size */
     }
     
     .two-column-row {
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
     }
     
     .turn-indicator-compact {
         justify-content: center;
+        padding: 12px;
+    }
+    
+    /* Mobile-friendly toggle switches */
+    .toggle-switch {
+        width: 70px;
+        height: 36px;
+    }
+    
+    .toggle-switch input {
+        height: 100%;
+        width: 100%;
+    }
+    
+    .slider:before {
+        height: 28px;
+        width: 28px;
+        left: 4px;
+        bottom: 4px;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(34px);
+    }
+    
+    /* Info panel mobile adjustments */
+    .info-panel {
+        margin-top: 20px;
+        padding: 20px;
+    }
+    
+    .info-panel li {
+        font-size: 1em;
+    }
+    
+    /* Collapsible headers more touch-friendly */
+    .collapsible-header {
+        padding: 10px;
+        margin: 5px 0;
+    }
+    
+    .collapsible-header:hover {
+        padding: 10px;
+        background: rgba(0,0,0,0.05);
+    }
+    
+    /* Modal adjustments for mobile */
+    .modal-content {
+        margin: 30% auto;
+        width: 90%;
+        max-width: 300px;
+        padding: 25px;
+    }
+    
+    .color-btn {
+        padding: 25px;
+        min-width: 120px;
+    }
+    
+    .piece-icon {
+        font-size: 3em;
+    }
+}
+
+/* Extra small screens (phones in portrait) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0;
+    }
+    
+    .board-wrapper {
+        max-width: 95vw;
+        padding: 10px;
+    }
+    
+    .controls {
+        padding: 20px;
+    }
+    
+    .btn {
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+    
+    .color-options {
+        gap: 15px;
+    }
+    
+    .color-btn {
+        min-width: 100px;
+        padding: 20px 15px;
     }
 }
     </style>
@@ -524,7 +648,7 @@ input:checked + .slider:before {
 <body>
     <div class="container">
         <header>
-            <h1>🎯 גלאי איומים בשחמט 🎯</h1>
+            <h1>גלאי איומים בשחמט</h1>
             <p class="subtitle">למדו לזהות איומים ולהגן על הכלים שלכם!</p>
         </header>
         
