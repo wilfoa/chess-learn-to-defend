@@ -98,7 +98,8 @@ function onDrop(source, target) {
     clearSquareThreats();
     
     // If it's computer's turn, make computer move
-    if (gameMode === 'computer' && game.turn() === 'b' && !game.game_over()) {
+    const computerColor = playerColor === 'white' ? 'b' : 'w';
+    if (gameMode === 'computer' && game.turn() === computerColor && !game.game_over()) {
         setTimeout(makeComputerMove, 500); // Small delay for better UX
     }
 }
