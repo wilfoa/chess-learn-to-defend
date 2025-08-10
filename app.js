@@ -35,6 +35,8 @@ $(document).ready(function() {
     // Event listeners
     $('#resetBtn').on('click', showColorSelectionModal);
     $('#undoBtn').on('click', undoMove);
+    $('#saveBtn').on('click', saveGame);
+    $('#loadBtn').on('click', loadGame);
     $('#showThreats').on('change', function() {
         showThreats = this.checked;
         if (!showThreats) {
@@ -620,5 +622,106 @@ function startNewGame(color) {
     // If player chose black, computer makes first move
     if (color === 'black') {
         setTimeout(makeComputerMove, 1000);
+    }
+}
+
+// Save game functionality
+function saveGame() {
+    if (game.history().length === 0) {
+        alert('אין משחק לשמירה - התחילו משחק חדש תחילה!');
+        return;
+    }
+    
+    const gameState = {
+        fen: game.fen(),
+        playerColor: playerColor,
+        difficulty: difficulty,
+        moveHistory: [...moveHistory],
+        timestamp: new Date().toLocaleString('he-IL'),
+        moves: game.history().length
+    };
+    
+    // Save to localStorage
+    const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
+    
+    // Add the new game with a unique ID
+    gameState.id = Date.now();
+    gameState.name = `משחק ${gameState.moves} מהלכים - ${gameState.timestamp}`;
+    savedGames.push(gameState);
+    
+    // Keep only the last 10 saved games
+    if (savedGames.length > 10) {
+        savedGames.shift();
+    }
+    
+    localStorage.setItem('chessGames', JSON.stringify(savedGames));
+    
+    alert(`המשחק נשמר בהצלחה! \n${gameState.name}`);
+}
+
+// Load game functionality
+function loadGame() {
+    const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
+    
+    if (savedGames.length === 0) {
+        alert('אין משחקים שמורים!');
+        return;
+    }
+    
+    // Create selection dialog
+    let options = 'בחרו משחק לטעינה:\n\n';
+    savedGames.forEach((game, index) => {
+        options += `${index + 1}. ${game.name}\n`;
+    });
+    options += '\nהזינו מספר (1-' + savedGames.length + ') או לחצו Cancel לביטול:';
+    
+    const choice = prompt(options);
+    
+    if (!choice) return; // User cancelled
+    
+    const gameIndex = parseInt(choice) - 1;
+    
+    if (gameIndex < 0 || gameIndex >= savedGames.length || isNaN(gameIndex)) {
+        alert('מספר לא תקין!');
+        return;
+    }
+    
+    const savedGame = savedGames[gameIndex];
+    
+    // Confirm loading
+    if (!confirm(`לטעון את המשחק:\n${savedGame.name}?\n\nהמשחק הנוכחי יאבד!`)) {
+        return;
+    }
+    
+    // Load the saved game state
+    try {
+        game.load(savedGame.fen);
+        playerColor = savedGame.playerColor;
+        difficulty = savedGame.difficulty;
+        moveHistory = [...savedGame.moveHistory];
+        
+        // Update board orientation and position
+        board.orientation(playerColor);
+        board.position(savedGame.fen);
+        
+        // Update UI
+        $(`input[name="difficulty"][value="${difficulty}"]`).prop('checked', true);
+        
+        // Clear threats and update status
+        clearSquareThreats();
+        showThreats = false;
+        $('#showThreats').prop('checked', false);
+        
+        updateStatus();
+        updateCapturedPieces();
+        
+        // Re-add click handlers
+        setTimeout(() => addSquareClickHandlers(), 100);
+        
+        alert(`המשחק נטען בהצלחה!\n${savedGame.name}`);
+        
+    } catch (error) {
+        alert('שגיאה בטעינת המשחק. הקובץ עלול להיות פגום.');
+        console.error('Load game error:', error);
     }
 }
