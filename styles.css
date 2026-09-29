@@ -207,6 +207,18 @@ header h1 {
     margin-right: 10px;
 }
 
+.help-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid #999;
+    background: #fff;
+    color: #555;
+    font-weight: bold;
+    cursor: pointer;
+    vertical-align: super;
+}
+
 .toggle-switch input {
     position: absolute;
     opacity: 0;

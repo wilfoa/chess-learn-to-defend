@@ -41,6 +41,14 @@ test.describe('Basic loading', () => {
     await expect(page.locator('input[name="difficulty"]')).toHaveCount(4);
   });
 
+  test('hint explanation is hidden until "?" is clicked', async ({ page }) => {
+    await expect(page.locator('#hintInfo')).toBeHidden();
+    await page.click('#hintHelp');
+    await expect(page.locator('#hintInfo')).toContainText('לחצו על ריבוע');
+    await page.click('#hintHelp');
+    await expect(page.locator('#hintInfo')).toBeHidden();
+  });
+
   test('new game sets up 32 pieces, and playing black flips the board', async ({ page }) => {
     await newGame(page, 'black');
     const whitePawn = await page.locator('.square-e2').boundingBox();

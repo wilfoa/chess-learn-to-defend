@@ -63,6 +63,11 @@ $(document).ready(function() {
         updateHintInfo();
     });
     updateHintInfo();
+    $('#hintHelp').on('click', function() {
+        const show = $('#hintInfo').prop('hidden');
+        $('#hintInfo').prop('hidden', !show);
+        $(this).attr('aria-expanded', show);
+    });
 
     // Modal event listeners
     $('#playWhite').on('click', () => startNewGame('white'));
