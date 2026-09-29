@@ -105,25 +105,57 @@ test.describe('Game logic', () => {
     await expect(page.locator('#currentTurnText')).toContainText('התור שלכם');
   });
 
-  test('save and load keep captured pieces, difficulty, and undo', async ({ page }) => {
+  test('save with a name, load by tapping it: keeps captured pieces, difficulty, and undo', async ({ page }) => {
     await newGame(page);
-    page.on('dialog', d => d.accept(d.type() === 'prompt' ? '1' : undefined)); // alert/confirm/prompt of save & load
     await page.evaluate(() => {
       localStorage.removeItem('chessGames');
       ['e4', 'd5', 'exd5', 'Qxd5'].forEach(m => game.move(m)); // each side has lost a pawn
       difficulty = 'attacker';
-      saveGame();
-      startNewGame('white');
-      difficulty = 'hard';
-      loadGame();
     });
+    await page.click('#saveBtn');
+    await expect(page.locator('#saveName')).toHaveValue('משחק של 4 מהלכים');
+    await page.fill('#saveName', 'המשחק של אדם');
+    await page.click('#saveForm button[type="submit"]');
+    await expect(page.locator('#saveModal')).toBeHidden();
+    await expect(page.locator('#gameStatus')).toContainText('המשחק של אדם');
+
+    await page.evaluate(() => { startNewGame('white'); difficulty = 'hard'; });
+    await page.click('#loadBtn');
+    await page.click('.saved-item:has-text("המשחק של אדם")');
+    await expect(page.locator('#loadModal')).toBeHidden();
     await expect(page.locator('#youCaptured')).toContainText('♟');
     await expect(page.locator('#computerCaptured')).toContainText('♙');
     await expect(page.locator('input[name="difficulty"][value="attacker"]')).toBeChecked();
     expect(await page.evaluate(() => difficulty)).toBe('attacker');
-    await page.click('#undoBtn'); // back to before exd5: black's pawn not yet taken, white's not either
+    await page.click('#undoBtn'); // back to before exd5
     await expect(page.locator('#youCaptured')).toBeEmpty();
     await expect(page.locator('.square-e4 img[data-piece="wP"]')).toHaveCount(1);
+  });
+
+  test('a saved game can be deleted from the load list', async ({ page }) => {
+    await newGame(page);
+    await page.evaluate(() => {
+      localStorage.setItem('chessGames', JSON.stringify([{ id: 1, name: 'ישן', timestamp: 'x', fen: game.fen(), playerColor: 'white', difficulty: 'easy' }]));
+    });
+    await page.click('#loadBtn');
+    await expect(page.locator('.saved-meta')).toContainText('מתחיל'); // old 'easy' saves show as Beginner
+    await page.click('.saved-delete');
+    await expect(page.locator('.saved-item')).toHaveCount(0);
+    await expect(page.locator('#noSaves')).toBeVisible();
+  });
+
+  test('game over opens a dialog; messages never push the layout', async ({ page }) => {
+    await newGame(page);
+    const before = await page.locator('.controls').boundingBox();
+    await page.evaluate(() => { game.load('4k3/8/8/8/8/8/2n5/K6R w - - 0 1'); updateStatus(); }); // check
+    await expect(page.locator('#gameStatus')).toBeVisible();
+    expect(await page.locator('.controls').boundingBox()).toEqual(before);
+    await page.evaluate(() => { game.load('k7/8/1K6/8/8/8/8/7Q w - - 0 1'); updateStatus(); });
+    await page.evaluate(() => { game.move('Qh8'); updateStatus(); }); // back-rank mate by the player (white)
+    await expect(page.locator('#endModal')).toBeVisible();
+    await expect(page.locator('#endText')).toContainText('ניצחתם');
+    await page.click('#endNewGame');
+    await expect(page.locator('#colorModal')).toBeVisible();
   });
 
   test('shows a check warning', async ({ page }) => {

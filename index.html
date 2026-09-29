@@ -37,7 +37,6 @@
                         <button type="button" class="lang-btn" data-lang="en" lang="en">EN</button>
                     </div>
                 </div>
-                <div class="status" id="gameStatus" role="status"></div>
 
                 <div class="toolbar">
                     <button id="resetBtn" class="tool-btn tool-primary">
@@ -140,6 +139,48 @@
             </div>
         </div>
     </div>
+
+    <!-- Save with a name -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <h3 data-i18n="saveTitle">שמירת משחק</h3>
+            <form id="saveForm">
+                <label for="saveName" class="field-label" data-i18n="saveNameLabel">שם למשחק</label>
+                <input id="saveName" class="text-field" type="text" maxlength="40" autocomplete="off">
+                <div class="modal-actions">
+                    <button type="submit" class="pill-btn pill-primary" data-i18n="save">שמירה</button>
+                    <button type="button" class="pill-btn modal-close" data-i18n="cancel">ביטול</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pick a saved game -->
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <h3 data-i18n="loadTitle">טעינת משחק</h3>
+            <p class="modal-note" data-i18n="loadNote">המשחק הנוכחי יוחלף במשחק שתבחרו.</p>
+            <ul id="savedList" class="saved-list"></ul>
+            <p id="noSaves" class="modal-note" data-i18n="noSavedGames" hidden></p>
+            <div class="modal-actions">
+                <button type="button" class="pill-btn modal-close" data-i18n="cancel">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="endModal" class="modal">
+        <div class="modal-content">
+            <h3 id="endText"></h3>
+            <div class="modal-actions">
+                <button type="button" id="endNewGame" class="pill-btn pill-primary" data-i18n="newGame">משחק חדש</button>
+                <button type="button" class="pill-btn modal-close" data-i18n="lookAtBoard">להסתכל על הלוח</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Short messages float over the page instead of pushing the layout -->
+    <div id="gameStatus" class="toast" role="status" aria-live="polite"></div>
 
     <!-- Blunder warning (Beginner/Attacker levels) -->
     <div id="warnModal" class="modal">

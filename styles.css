@@ -153,18 +153,6 @@ header h1 {
     color: #fff;
 }
 
-.status:empty {
-    display: none;
-}
-
-.status {
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: var(--red-soft);
-    color: var(--red);
-    font-weight: 700;
-}
-
 .toolbar {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -602,6 +590,126 @@ input:checked + .slider:before {
 .piece-icon {
     font-size: 2.5em;
     line-height: 1;
+}
+
+/* Floating message: never pushes the layout */
+.toast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translate(-50%, -20px);
+    width: max-content;
+    max-width: min(90vw, 460px);
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: var(--red);
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(31, 36, 51, 0.25);
+    z-index: 900;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.toast.good {
+    background: var(--green-ink);
+}
+
+/* Save / load dialogs */
+.modal-note {
+    color: var(--muted);
+    font-size: 14px;
+    margin: -8px 0 14px;
+}
+
+.field-label {
+    display: block;
+    text-align: start;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.text-field {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border: 2px solid #D5D9E2;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 16px; /* 16px keeps iOS from zooming in */
+}
+
+.text-field:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.saved-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 50vh;
+    overflow-y: auto;
+    margin-bottom: 14px;
+}
+
+.saved-row {
+    display: flex;
+    gap: 6px;
+}
+
+.saved-item {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: var(--blue-soft);
+    color: var(--ink);
+    text-align: start;
+}
+
+.saved-item:hover {
+    border-color: var(--blue);
+}
+
+.saved-name {
+    font-weight: 700;
+}
+
+.saved-meta {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.saved-delete {
+    width: 44px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 14px;
+    background: var(--soft);
+    color: var(--muted);
+    font-size: 20px;
+}
+
+.saved-delete:hover {
+    background: var(--red-soft);
+    color: var(--red);
 }
 
 /* ---- Responsive ---- */

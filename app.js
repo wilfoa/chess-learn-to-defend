@@ -83,15 +83,19 @@ const STRINGS = {
         hintInfoBeginner: ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.',
         hintsLeft: 'נשארו {n}',
         noGameToSave: 'אין עדיין משחק לשמירה - התחילו משחק חדש!',
-        savedName: 'משחק של {n} מהלכים - {time}',
-        saved: 'המשחק נשמר!\n{name}',
-        noSavedGames: 'אין משחקים שמורים!',
-        pickSave: 'בחרו משחק לטעינה:',
-        enterNumber: 'הקלידו מספר (1-{n}) או לחצו ביטול:',
-        badNumber: 'מספר לא תקין!',
-        confirmLoad: 'לטעון את המשחק:\n{name}?\n\nהמשחק הנוכחי יאבד!',
-        loaded: 'המשחק נטען!\n{name}',
-        loadError: 'לא הצלחנו לטעון את המשחק. ייתכן שהשמירה פגומה.'
+        saveTitle: 'שמירת משחק',
+        saveNameLabel: 'שם למשחק',
+        defaultSaveName: 'משחק של {n} מהלכים',
+        cancel: 'ביטול',
+        saved: 'המשחק "{name}" נשמר!',
+        saveFailed: 'לא הצלחנו לשמור את המשחק בדפדפן הזה.',
+        loadTitle: 'טעינת משחק',
+        loadNote: 'המשחק הנוכחי יוחלף במשחק שתבחרו.',
+        noSavedGames: 'אין עדיין משחקים שמורים.',
+        deleteSave: 'מחיקת "{name}"',
+        loaded: 'המשחק "{name}" נטען!',
+        loadError: 'לא הצלחנו לטעון את המשחק. ייתכן שהשמירה פגומה.',
+        lookAtBoard: 'להסתכל על הלוח'
     },
     en: {
         pageTitle: 'Chess Threat Spotter for Kids',
@@ -152,15 +156,19 @@ const STRINGS = {
         hintInfoBeginner: ' On Beginner, your pieces in danger are marked in red.',
         hintsLeft: '{n} left',
         noGameToSave: 'Nothing to save yet - start a new game first!',
-        savedName: 'Game of {n} moves - {time}',
-        saved: 'Game saved!\n{name}',
-        noSavedGames: 'No saved games!',
-        pickSave: 'Choose a game to load:',
-        enterNumber: 'Type a number (1-{n}) or press Cancel:',
-        badNumber: 'Invalid number!',
-        confirmLoad: 'Load this game:\n{name}?\n\nThe current game will be lost!',
-        loaded: 'Game loaded!\n{name}',
-        loadError: 'Could not load the game. The save may be damaged.'
+        saveTitle: 'Save game',
+        saveNameLabel: 'Name this game',
+        defaultSaveName: 'Game of {n} moves',
+        cancel: 'Cancel',
+        saved: 'Saved "{name}"!',
+        saveFailed: 'Could not save the game in this browser.',
+        loadTitle: 'Load a game',
+        loadNote: 'The current game will be replaced by the one you pick.',
+        noSavedGames: 'No saved games yet.',
+        deleteSave: 'Delete "{name}"',
+        loaded: 'Loaded "{name}"!',
+        loadError: 'Could not load the game. The save may be damaged.',
+        lookAtBoard: 'Look at the board'
     }
 };
 let lang = 'he';
@@ -250,6 +258,11 @@ $(document).ready(function() {
     // Modal event listeners
     $('#playWhite').on('click', () => startNewGame('white'));
     $('#playBlack').on('click', () => startNewGame('black'));
+    $('#saveForm').on('submit', confirmSave);
+    $('#endNewGame').on('click', () => { $('#endModal').hide(); showColorSelectionModal(); });
+    $('.modal-close').on('click', function() { $(this).closest('.modal').hide(); });
+    // Tapping outside a dialog closes it, except the blunder warning, which needs an answer
+    $('.modal').not('#warnModal').on('click', function(e) { if (e.target === this) $(this).hide(); });
     $('#warnKeep').on('click', keepWarnedMove);
     $('#warnUndo').on('click', takeBackWarnedMove);
 });
@@ -390,18 +403,34 @@ function isGameOver() {
     return game.in_checkmate() || game.in_stalemate() || game.insufficient_material();
 }
 
-// Turn chip and game status, from the child's point of view
+// Short message floating over the page, gone after a few seconds
+let toastTimer = null;
+function showToast(text, good = false) {
+    clearTimeout(toastTimer);
+    $('#gameStatus').text(text).toggleClass('good', good).addClass('show');
+    toastTimer = setTimeout(() => $('#gameStatus').removeClass('show'), 3000);
+}
+
+// Turn chip, plus a message (and a game-over dialog) when the game state changes
+let lastStatus = '';
 function updateStatus() {
     const myTurn = game.turn() === (playerColor === 'white' ? 'w' : 'b');
     $('#currentTurnText').text(myTurn ? t('yourTurn') : t('computerThinking'));
     $('#turnChip').toggleClass('waiting', !myTurn && !isGameOver());
 
-    let status = '', good = false;
-    if (game.in_checkmate()) { status = myTurn ? t('computerWins') : t('youWin'); good = !myTurn; }
-    else if (game.in_stalemate()) status = t('stalemate');
-    else if (game.insufficient_material()) status = t('insufficient');
-    else if (game.in_check()) { status = myTurn ? t('youInCheck') : t('computerInCheck'); good = !myTurn; }
-    $('#gameStatus').text(status).toggleClass('good', good);
+    let status = '';
+    if (game.in_checkmate()) status = myTurn ? 'computerWins' : 'youWin';
+    else if (game.in_stalemate()) status = 'stalemate';
+    else if (game.insufficient_material()) status = 'insufficient';
+    else if (game.in_check()) status = myTurn ? 'youInCheck' : 'computerInCheck';
+    if (status && status !== lastStatus) {
+        showToast(t(status), status === 'youWin' || status === 'computerInCheck');
+        if (isGameOver()) {
+            $('#endText').text(t(status));
+            $('#endModal').show();
+        }
+    }
+    lastStatus = status;
 }
 
 // Captured pieces, from the child's point of view
@@ -712,11 +741,8 @@ function flashDangerPieces() {
             addSquareHighlight(sq, 'threatened-square', attackers)?.addClass('danger-flash');
         }
     }));
-    if (!found) $('#gameStatus').text(t('noDanger')).addClass('good');
-    setTimeout(() => {
-        $('.danger-flash').remove();
-        if (!found) updateStatus();
-    }, 2500);
+    if (!found) showToast(t('noDanger'), true);
+    setTimeout(() => $('.danger-flash').remove(), 2500);
 }
 
 function clearSquareThreats() {
@@ -774,6 +800,8 @@ function startNewGame(color) {
     
     // Hide modal
     $('#colorModal').hide();
+    $('#endModal').hide();
+    lastStatus = '';
     
     // Reset game
     game.reset();
@@ -799,102 +827,94 @@ function startNewGame(color) {
     }
 }
 
-// Save game functionality
-function saveGame() {
-    if (game.history().length === 0) {
-        alert(t('noGameToSave'));
-        return;
-    }
-    
-    const gameState = {
-        fen: game.fen(),
-        playerColor: playerColor,
-        difficulty: difficulty,
-        pgn: game.pgn(), // full move list, so captured pieces and undo survive a reload
-        timestamp: new Date().toLocaleString(lang === 'he' ? 'he-IL' : 'en-US'),
-        moves: game.history().length
-    };
-    
-    // Save to localStorage
-    const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-    
-    // Add the new game with a unique ID
-    gameState.id = Date.now();
-    gameState.name = t('savedName', { n: gameState.moves, time: gameState.timestamp });
-    savedGames.push(gameState);
-    
-    // Keep only the last 10 saved games
-    if (savedGames.length > 10) {
-        savedGames.shift();
-    }
-    
-    localStorage.setItem('chessGames', JSON.stringify(savedGames));
-    
-    alert(t('saved', { name: gameState.name }));
+// Saved games live in this browser (localStorage), newest last
+function readSaves() {
+    try { return JSON.parse(localStorage.getItem('chessGames') || '[]'); } catch (e) { return []; }
 }
 
-// Load game functionality
-function loadGame() {
-    const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-    
-    if (savedGames.length === 0) {
-        alert(t('noSavedGames'));
+function writeSaves(saves) {
+    try { localStorage.setItem('chessGames', JSON.stringify(saves)); return true; } catch (e) { return false; }
+}
+
+// Save: ask for a name first
+function saveGame() {
+    if (game.history().length === 0) {
+        showToast(t('noGameToSave'));
         return;
     }
-    
-    // Create selection dialog
-    let options = t('pickSave') + '\n\n';
-    savedGames.forEach((game, index) => {
-        options += `${index + 1}. ${game.name}\n`;
+    $('#saveName').val(t('defaultSaveName', { n: game.history().length }));
+    $('#saveModal').show();
+    $('#saveName').trigger('focus').trigger('select');
+}
+
+function confirmSave(e) {
+    e.preventDefault();
+    const name = $('#saveName').val().trim() || t('defaultSaveName', { n: game.history().length });
+    const saves = readSaves();
+    saves.push({
+        id: Date.now(),
+        name,
+        timestamp: new Date().toLocaleString(lang === 'he' ? 'he-IL' : 'en-US'),
+        moves: game.history().length,
+        fen: game.fen(),
+        pgn: game.pgn(), // full move list, so captured pieces and undo survive a reload
+        playerColor,
+        difficulty
     });
-    options += '\n' + t('enterNumber', { n: savedGames.length });
-    
-    const choice = prompt(options);
-    
-    if (!choice) return; // User cancelled
-    
-    const gameIndex = parseInt(choice) - 1;
-    
-    if (gameIndex < 0 || gameIndex >= savedGames.length || isNaN(gameIndex)) {
-        alert(t('badNumber'));
-        return;
-    }
-    
-    const savedGame = savedGames[gameIndex];
-    
-    // Confirm loading
-    if (!confirm(t('confirmLoad', { name: savedGame.name }))) {
-        return;
-    }
-    
-    // Load the saved game state
+    while (saves.length > 20) saves.shift();
+    $('#saveModal').hide();
+    showToast(writeSaves(saves) ? t('saved', { name }) : t('saveFailed'), true);
+}
+
+// Load: a tappable list, newest first, each with a delete button
+function loadGame() {
+    renderSavedList();
+    $('#loadModal').show();
+}
+
+function renderSavedList() {
+    const saves = readSaves();
+    const $list = $('#savedList').empty();
+    $('#noSaves').prop('hidden', saves.length > 0);
+    saves.slice().reverse().forEach(saved => {
+        const level = LEVELS[saved.difficulty] ? saved.difficulty : 'beginner';
+        const $open = $('<button type="button" class="saved-item">')
+            .append($('<span class="saved-name">').text(saved.name))
+            .append($('<span class="saved-meta">').text(`${saved.timestamp} · ${t('level_' + level)}`))
+            .on('click', () => restoreGame(saved));
+        const $delete = $('<button type="button" class="saved-delete">×</button>')
+            .attr('aria-label', t('deleteSave', { name: saved.name }))
+            .on('click', () => {
+                writeSaves(readSaves().filter(g => g.id !== saved.id));
+                renderSavedList();
+            });
+        $list.append($('<li class="saved-row">').append($open, $delete));
+    });
+}
+
+function restoreGame(savedGame) {
+    $('#loadModal').hide();
     try {
         if (!(savedGame.pgn && game.load_pgn(savedGame.pgn))) game.load(savedGame.fen); // older saves have only the position
         playerColor = savedGame.playerColor;
         difficulty = LEVELS[savedGame.difficulty] ? savedGame.difficulty : 'beginner'; // old saves used 'easy'
         hintsUsed = 0;
-        
-        // Update board orientation and position
+        lastStatus = '';
+
         board.orientation(playerColor);
-        board.position(savedGame.fen);
-        
-        // Update UI
+        board.position(game.fen());
         $(`input[name="difficulty"][value="${difficulty}"]`).prop('checked', true);
-        
-        // Clear threats and update status
+
         clearSquareThreats();
         setThreatMode(false);
-        
         updateStatus();
         updateCapturedPieces();
         updateHintInfo();
         showAutoHints();
         afterPlayerMove(); // saved while the computer was thinking: let it move
-
-        alert(t('loaded', { name: savedGame.name }));
-        
+        showToast(t('loaded', { name: savedGame.name }), true);
     } catch (error) {
-        alert(t('loadError'));
+        showToast(t('loadError'));
         console.error('Load game error:', error);
     }
 }
