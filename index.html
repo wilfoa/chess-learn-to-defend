@@ -4,171 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>גלאי איומים בשחמט לילדים</title>
-    
-    <!-- Chessboard.js CSS -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#3B5BDB">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-    
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>גלאי איומים בשחמט</h1>
-            <p class="subtitle">למדו לזהות איומים ולהגן על הכלים שלכם!</p>
-            <p class="dedication">מוקדש באהבה לאדם וילף ❤️</p>
+            <h1 data-i18n="appTitle">גלאי איומים בשחמט</h1>
+            <p class="subtitle" data-i18n="subtitle">למדו לזהות איומים ולהגן על הכלים שלכם!</p>
+            <p class="dedication" data-i18n="dedication">מוקדש באהבה לאדם וילף ❤️</p>
         </header>
-        
+
         <div class="game-container">
             <div class="board-wrapper">
                 <div id="board"></div>
-                <div class="threat-overlay" id="threatOverlay"></div>
             </div>
-            
+
             <div class="controls">
-                <div class="control-section">
-                    <h3>בקרות משחק</h3>
-                    <button id="resetBtn" class="btn btn-primary">🔄 משחק חדש</button>
-                    <button id="undoBtn" class="btn btn-secondary">↩️ בטל מהלך</button>
-                    <button id="saveBtn" class="btn btn-secondary">💾 שמור משחק</button>
-                    <button id="loadBtn" class="btn btn-secondary">📁 טען משחק</button>
-                </div>
-                
-                <div class="control-section">
-                    <div class="two-column-row">
-                        <div class="column">
-                            <h3>תצוגת איומים</h3>
-                            <div class="toggle-row">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="showThreats">
-                                    <span class="slider"></span>
-                                </label>
-                                <label for="showThreats" class="toggle-caption">מי מאיים?</label>
-                                <button type="button" class="help-btn" aria-label="הסבר" aria-expanded="false" aria-controls="hintInfo">?</button>
-                            </div>
-                            <p id="hintInfo" class="help-text" hidden></p>
-                            <div class="toggle-row">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="showDanger">
-                                    <span class="slider"></span>
-                                </label>
-                                <label for="showDanger" class="toggle-caption">הכלים שלי בסכנה</label>
-                                <button type="button" class="help-btn" aria-label="הסבר" aria-expanded="false" aria-controls="dangerInfo">?</button>
-                            </div>
-                            <p id="dangerInfo" class="help-text" hidden>הפעילו כדי לסמן לרגע באדום את כל הכלים שלכם שמאוימים עכשיו.</p>
-                            <div class="toggle-row">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="limitHints">
-                                    <span class="slider"></span>
-                                </label>
-                                <label for="limitHints" class="toggle-caption">הגבלת רמזים לפי רמה</label>
-                                <button type="button" class="help-btn" aria-label="הסבר" aria-expanded="false" aria-controls="limitInfo">?</button>
-                            </div>
-                            <p id="limitInfo" class="help-text" hidden>כשמופעל, מספר הרמזים במשחק תלוי ברמה: מתחיל ותוקף - בלי הגבלה, בינוני - 3, קשה - בלי רמזים. כל שימוש ב"מי מאיים?" או ב"הכלים שלי בסכנה" נספר כרמז. כבוי - רמזים בלי הגבלה בכל הרמות.</p>
-                        </div>
-                        
-                        <div class="column">
-                            <h3>מצב המשחק</h3>
-                            <div class="turn-indicator-compact">
-                                <span id="currentTurnIcon" class="turn-icon">♕</span>
-                                <span id="currentTurnText">תור הלבן</span>
-                            </div>
-                            <div class="status" id="gameStatus"></div>
-                        </div>
+                <div class="card-top">
+                    <div class="turn-chip" id="turnChip">
+                        <span class="turn-dot"></span>
+                        <span id="currentTurnText"></span>
+                    </div>
+                    <div class="lang-switch" role="group" aria-label="Language / שפה">
+                        <button type="button" class="lang-btn" data-lang="he" lang="he">עב</button>
+                        <button type="button" class="lang-btn" data-lang="en" lang="en">EN</button>
                     </div>
                 </div>
-                
-                <div class="control-section">
-                    <div class="collapsible-header" onclick="toggleDifficulty()">
-                        <h3>⚙️ רמת המחשב</h3>
-                        <span class="collapse-arrow" id="collapseArrow">▼</span>
-                    </div>
-                    <div class="difficulty-selector collapsed" id="difficultySelector">
-                        <label>
-                            <input type="radio" name="difficulty" value="beginner" checked>
-                            🟢 מתחיל - המחשב אוכל כלים שנשארו בלי הגנה. כלים שלכם בסכנה מסומנים, והמחשב מזהיר לפני טעות
-                        </label>
-                        <label>
-                            <input type="radio" name="difficulty" value="attacker">
-                            🟡 תוקף - המחשב מחפש לתקוף את הכלים שלכם. שימו לב לאיומים! המחשב מזהיר לפני טעות
-                        </label>
-                        <label>
-                            <input type="radio" name="difficulty" value="medium">
-                            🟠 בינוני - המחשב חושב מהלך קדימה ולא נותן כלים בחינם. 3 רמזים למשחק
-                        </label>
-                        <label>
-                            <input type="radio" name="difficulty" value="hard">
-                            🔴 קשה - המחשב חושב שני מהלכים קדימה ומחפש מזלגות. בלי רמזים
-                        </label>
-                    </div>
+                <div class="status" id="gameStatus" role="status"></div>
+
+                <div class="toolbar">
+                    <button id="resetBtn" class="tool-btn tool-primary">
+                        <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span>
+                        <span data-i18n="newGame">משחק חדש</span>
+                    </button>
+                    <button id="undoBtn" class="tool-btn">
+                        <span class="tool-icon"><svg class="icon-undo" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span>
+                        <span data-i18n="undo">חזרה</span>
+                    </button>
+                    <button id="saveBtn" class="tool-btn">
+                        <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>
+                        <span data-i18n="save">שמירה</span>
+                    </button>
+                    <button id="loadBtn" class="tool-btn">
+                        <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+                        <span data-i18n="load">טעינה</span>
+                    </button>
                 </div>
-                
-                <div class="control-section">
-                    <h3>כלים שנלכדו</h3>
-                    <div class="captured-pieces">
-                        <div id="whiteCaptured" class="captured-row"></div>
-                        <div id="blackCaptured" class="captured-row"></div>
+
+                <div class="hint-row">
+                    <button type="button" id="showThreats" class="hint-btn hint-threats" aria-pressed="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                        <span data-i18n="whoThreatens">מי מאיים?</span>
+                        <span class="hint-count" id="hintCount" hidden></span>
+                    </button>
+                    <button type="button" class="help-btn" data-i18n-aria="explain" aria-label="הסבר" aria-expanded="false" aria-controls="hintInfo">?</button>
+                </div>
+                <p id="hintInfo" class="help-text" hidden></p>
+
+                <div class="hint-row">
+                    <button type="button" id="showDanger" class="hint-btn hint-danger">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 20h18z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
+                        <span data-i18n="myPiecesInDanger">הכלים שלי בסכנה</span>
+                    </button>
+                    <button type="button" class="help-btn" data-i18n-aria="explain" aria-label="הסבר" aria-expanded="false" aria-controls="dangerInfo">?</button>
+                </div>
+                <p id="dangerInfo" class="help-text" data-i18n="dangerInfo" hidden></p>
+
+                <div class="section">
+                    <div class="section-label" id="levelLabel" data-i18n="level">רמה</div>
+                    <div class="segmented" role="radiogroup" aria-labelledby="levelLabel">
+                        <label><input type="radio" name="difficulty" value="beginner" checked><span data-i18n="level_beginner">מתחיל</span></label>
+                        <label><input type="radio" name="difficulty" value="attacker"><span data-i18n="level_attacker">תוקף</span></label>
+                        <label><input type="radio" name="difficulty" value="medium"><span data-i18n="level_medium">בינוני</span></label>
+                        <label><input type="radio" name="difficulty" value="hard"><span data-i18n="level_hard">קשה</span></label>
+                    </div>
+                    <p class="level-caption" id="levelCaption"></p>
+                    <div class="setting-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="limitHints">
+                            <span class="slider"></span>
+                        </label>
+                        <label for="limitHints" class="toggle-caption" data-i18n="limitHints">הגבלת רמזים לפי רמה</label>
+                        <button type="button" class="help-btn" data-i18n-aria="explain" aria-label="הסבר" aria-expanded="false" aria-controls="limitInfo">?</button>
+                    </div>
+                    <p id="limitInfo" class="help-text" data-i18n="limitInfo" hidden></p>
+                </div>
+
+                <div class="section">
+                    <div class="section-label" data-i18n="captured">נאכלו</div>
+                    <div class="captured-row">
+                        <span data-i18n="youCaptured">אכלתם</span>
+                        <span class="captured-pieces" id="youCaptured"></span>
+                    </div>
+                    <div class="captured-row">
+                        <span data-i18n="computerCaptured">המחשב אכל</span>
+                        <span class="captured-pieces" id="computerCaptured"></span>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="info-panel">
-            <div class="collapsible-header" onclick="toggleInstructions()">
-                <h3>🎓 איך להשתמש</h3>
-                <span class="collapse-arrow" id="instructionsArrow">▼</span>
-            </div>
-            <div class="instructions-content collapsed" id="instructionsContent">
-                <ul>
-                    <li>🔴 לחצו על כל ריבוע כדי לראות איזה כלים מאיימים עליו</li>
-                    <li>📍 ככל שיותר כלים מאיימים, הגבול האדום יהיה עבה יותר</li>
-                    <li>🎯 הריבוע שנבחר מסומן בכחול</li>
-                    <li>♟️ גררו כלי, או לחצו על כלי ואז על הריבוע שאליו הוא זז</li>
-                    <li>⚠️ כשהמלך שלכם בשח הוא מסומן - הפעילו את גלאי האיומים ולחצו עליו כדי לראות מי מאיים</li>
-                    <li>🤖 בחרו צבע ושחקו נגד המחשב</li>
-                    <li>⚙️ בחרו רמה: מתחיל, תוקף, בינוני או קשה</li>
-                </ul>
-            </div>
-        </div>
+
+        <details class="info-panel">
+            <summary data-i18n="howTo">איך משחקים?</summary>
+            <ul>
+                <li data-i18n="howTo1"></li>
+                <li data-i18n="howTo2"></li>
+                <li data-i18n="howTo3"></li>
+                <li data-i18n="howTo4"></li>
+                <li data-i18n="howTo5"></li>
+                <li data-i18n="howTo6"></li>
+            </ul>
+        </details>
     </div>
-    
+
     <!-- Color Selection Modal -->
     <div id="colorModal" class="modal">
         <div class="modal-content">
-            <h3>בחרו צבע לשחק</h3>
+            <h3 data-i18n="pickColor">באיזה צבע תשחקו?</h3>
             <div class="color-options">
-                <button id="playWhite" class="color-btn white-btn">
+                <button id="playWhite" class="color-btn">
                     <span class="piece-icon">♔</span>
-                    <span>לבן</span>
+                    <span data-i18n="white">לבן</span>
                 </button>
-                <button id="playBlack" class="color-btn black-btn">
+                <button id="playBlack" class="color-btn">
                     <span class="piece-icon">♚</span>
-                    <span>שחור</span>
+                    <span data-i18n="black">שחור</span>
                 </button>
             </div>
         </div>
     </div>
-    
+
     <!-- Blunder warning (Beginner/Attacker levels) -->
     <div id="warnModal" class="modal">
         <div class="modal-content">
-            <h3>⚠️ רגע, בדקו!</h3>
+            <h3 data-i18n="warnTitle">רגע, בדקו!</h3>
             <p id="warnText"></p>
-            <button id="warnUndo" class="btn btn-primary">↩️ אחזיר את המהלך</button>
-            <button id="warnKeep" class="btn btn-secondary">✔️ זה המהלך שלי</button>
+            <div class="modal-actions">
+                <button id="warnUndo" class="pill-btn pill-primary" data-i18n="warnUndo">אחזיר את המהלך</button>
+                <button id="warnKeep" class="pill-btn" data-i18n="warnKeep">זה המהלך שלי</button>
+            </div>
         </div>
     </div>
-    
-    <!-- jQuery (required by chessboard.js) -->
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- Chess.js for game logic -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    
-    <!-- Chessboard.js for board UI -->
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    
-    <!-- Our custom chess logic -->
     <script src="app.js"></script>
 </body>
 </html>

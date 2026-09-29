@@ -31,20 +31,19 @@ test.describe('Basic loading', () => {
   });
 
   test('shows control sections and buttons', async ({ page }) => {
-    for (const heading of ['בקרות משחק', 'תצוגת איומים', 'מצב המשחק', 'רמת המחשב', 'כלים שנלכדו', 'איך להשתמש']) {
-      await expect(page.locator(`h3:has-text("${heading}")`)).toBeVisible();
-    }
+    await expect(page.locator('.section-label')).toHaveText(['רמה', 'נאכלו']);
+    await expect(page.locator('.info-panel summary')).toHaveText('איך משחקים?');
     await expect(page.locator('#resetBtn')).toContainText('משחק חדש');
-    await expect(page.locator('#undoBtn')).toContainText('בטל מהלך');
-    await expect(page.locator('#showThreats')).not.toBeChecked();
-    await expect(page.locator('#currentTurnText')).toContainText('תור הלבן');
+    await expect(page.locator('#undoBtn')).toContainText('חזרה');
+    await expect(page.locator('#showThreats')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('#currentTurnText')).toContainText('התור שלכם');
     await expect(page.locator('input[name="difficulty"]')).toHaveCount(4);
   });
 
   test('hint explanation is hidden until "?" is clicked', async ({ page }) => {
     await expect(page.locator('#hintInfo')).toBeHidden();
     await page.click('[aria-controls="hintInfo"]');
-    await expect(page.locator('#hintInfo')).toContainText('לחצו על ריבוע');
+    await expect(page.locator('#hintInfo')).toContainText('ואז על ריבוע');
     await page.click('[aria-controls="hintInfo"]');
     await expect(page.locator('#hintInfo')).toBeHidden();
   });
@@ -57,13 +56,36 @@ test.describe('Basic loading', () => {
   });
 });
 
+test('language switch translates the page, flips direction, and is remembered', async ({ page }) => {
+  await newGame(page);
+  await page.click('.lang-btn[data-lang="en"]');
+  await expect(page).toHaveTitle('Chess Threat Spotter for Kids');
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+  await expect(page.locator('#resetBtn')).toContainText('New game');
+  await expect(page.locator('#currentTurnText')).toContainText('Your turn');
+  await expect(page.locator('#levelCaption')).toContainText('unprotected');
+  const warning = await page.evaluate(() => {
+    game.load('4k3/8/8/8/2q5/8/3P4/4K3 w - - 0 1');
+    board.position(game.fen(), false);
+    tryMove('d2', 'd3');
+    return $('#warnText').text();
+  });
+  expect(warning).toContain('your pawn (d3)');
+  expect(await page.evaluate(() => /[\u0590-\u05FF]/.test(document.body.innerText.replace(/עב/, '')))).toBe(false);
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await page.click('.lang-btn[data-lang="he"]');
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(page.locator('#resetBtn')).toContainText('משחק חדש');
+});
+
 test.describe('Game logic', () => {
   test('a legal move is played and the computer replies', async ({ page }) => {
     await newGame(page);
     await drag(page, 'e2', 'e4');
     await expect(page.locator('.square-e4 img[data-piece="wP"]')).toHaveCount(1);
     await expect.poll(() => page.evaluate(() => game.history().length)).toBe(2);
-    await expect(page.locator('#currentTurnText')).toContainText('תור הלבן');
+    await expect(page.locator('#currentTurnText')).toContainText('התור שלכם');
   });
 
   test('an illegal move snaps back', async ({ page }) => {
@@ -80,7 +102,7 @@ test.describe('Game logic', () => {
     await expect.poll(() => page.evaluate(() => game.history().length)).toBe(2);
     await page.click('#undoBtn');
     await expect(page.locator('.square-e2 img[data-piece="wP"]')).toHaveCount(1);
-    await expect(page.locator('#currentTurnText')).toContainText('תור הלבן');
+    await expect(page.locator('#currentTurnText')).toContainText('התור שלכם');
   });
 
   test('save and load keep captured pieces, difficulty, and undo', async ({ page }) => {
@@ -95,12 +117,12 @@ test.describe('Game logic', () => {
       difficulty = 'hard';
       loadGame();
     });
-    await expect(page.locator('#whiteCaptured')).toContainText('♙');
-    await expect(page.locator('#blackCaptured')).toContainText('♟');
+    await expect(page.locator('#youCaptured')).toContainText('♟');
+    await expect(page.locator('#computerCaptured')).toContainText('♙');
     await expect(page.locator('input[name="difficulty"][value="attacker"]')).toBeChecked();
     expect(await page.evaluate(() => difficulty)).toBe('attacker');
     await page.click('#undoBtn'); // back to before exd5: black's pawn not yet taken, white's not either
-    await expect(page.locator('#blackCaptured')).toBeEmpty();
+    await expect(page.locator('#youCaptured')).toBeEmpty();
     await expect(page.locator('.square-e4 img[data-piece="wP"]')).toHaveCount(1);
   });
 
@@ -110,7 +132,7 @@ test.describe('Game logic', () => {
       game.load('4k3/8/8/8/8/8/2n5/K6R w - - 0 1');
       updateStatus();
     });
-    await expect(page.locator('#gameStatus')).toContainText('בשח');
+    await expect(page.locator('#gameStatus')).toContainText('שח!');
   });
 
   test('50-move rule does not end the game, bare kings do', async ({ page }) => {
@@ -130,18 +152,18 @@ test.describe('Game logic', () => {
 test.describe('Threat detector', () => {
   test('tapping a square shows its attackers, then the toggle turns itself off', async ({ page }) => {
     await newGame(page);
-    await page.locator('#showThreats').check({ force: true });
+    await page.click('#showThreats');
     await page.click('.square-f6'); // black: g8 knight, e7 and g7 pawns
     await expect(page.locator('.square-attacker')).toHaveCount(3);
-    await expect(page.locator('#showThreats')).not.toBeChecked();
+    await expect(page.locator('#showThreats')).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('turning the toggle off clears the highlights', async ({ page }) => {
     await newGame(page);
-    await page.locator('#showThreats').check({ force: true });
+    await page.click('#showThreats');
     await page.click('.square-f6');
-    await page.locator('#showThreats').check({ force: true });
-    await page.locator('#showThreats').uncheck({ force: true });
+    await page.click('#showThreats'); // arm again
+    await page.click('#showThreats'); // and disarm: clears the board
     await expect(page.locator('.square-highlight')).toHaveCount(0);
   });
 });
@@ -233,7 +255,7 @@ test.describe('Teaching levels', () => {
       showAutoHints();
     });
     await expect(page.locator('.check-square')).toHaveCount(1);
-    await page.locator('#showThreats').check({ force: true });
+    await page.click('#showThreats');
     await page.click('.square-a1');
     await expect(page.locator('.threatened-square')).toHaveCount(1);
     await expect(page.locator('.square-attacker')).toHaveCount(1);
@@ -247,7 +269,7 @@ test.describe('Teaching levels', () => {
     await expect(page.locator('#showDanger')).toBeDisabled();
     await page.evaluate(() => { difficulty = 'medium'; hintsUsed = 2; updateHintInfo(); });
     await expect(page.locator('#showDanger')).toBeEnabled();
-    await page.locator('#showDanger').click({ force: true }); // third and last hint
+    await page.click('#showDanger'); // third and last hint
     await expect(page.locator('#showThreats')).toBeDisabled();
     await page.locator('#limitHints').uncheck({ force: true });
     await expect(page.locator('#showThreats')).toBeEnabled();
@@ -258,9 +280,8 @@ test.describe('Teaching levels', () => {
       game.load('4k3/8/8/8/8/q1N5/8/R3K3 w - - 0 1'); // black queen hits the knight and the rook
       board.position(game.fen(), false);
     });
-    await page.locator('#showDanger').click({ force: true });
+    await page.click('#showDanger');
     await expect(page.locator('.danger-flash')).toHaveCount(2);
-    await expect(page.locator('#showDanger')).not.toBeChecked();
     await expect(page.locator('.danger-flash')).toHaveCount(0, { timeout: 4000 });
   });
 

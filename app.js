@@ -21,6 +21,169 @@ const LEVELS = {
     hard:     { depth: 3, blunder: 0, autoHints: false, hintLimit: 0, warnBlunders: false }
 };
 const PIECE_VALUES = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
+
+// Every piece of UI text, per language. Markup uses data-i18n="key"; code uses t('key', {vars})
+const STRINGS = {
+    he: {
+        pageTitle: 'גלאי איומים בשחמט לילדים',
+        appTitle: 'גלאי איומים בשחמט',
+        subtitle: 'למדו לזהות איומים ולהגן על הכלים שלכם!',
+        dedication: 'מוקדש באהבה לאדם וילף ❤️',
+        yourTurn: 'התור שלכם!',
+        computerThinking: 'המחשב חושב…',
+        newGame: 'משחק חדש',
+        undo: 'חזרה',
+        save: 'שמירה',
+        load: 'טעינה',
+        whoThreatens: 'מי מאיים?',
+        myPiecesInDanger: 'הכלים שלי בסכנה',
+        explain: 'הסבר',
+        dangerInfo: 'לחצו כדי לסמן לרגע באדום את כל הכלים שלכם שמאוימים עכשיו.',
+        level: 'רמה',
+        level_beginner: 'מתחיל',
+        level_attacker: 'תוקף',
+        level_medium: 'בינוני',
+        level_hard: 'קשה',
+        caption_beginner: 'המחשב אוכל כלים שנשארו בלי הגנה. כלים שלכם בסכנה מסומנים, והמחשב מזהיר לפני טעות.',
+        caption_attacker: 'המחשב מחפש לתקוף את הכלים שלכם, ומזהיר לפני טעות.',
+        caption_medium: 'המחשב חושב מהלך קדימה ולא נותן כלים בחינם.',
+        caption_hard: 'המחשב חושב שני מהלכים קדימה ומחפש מזלגות.',
+        limitHints: 'הגבלת רמזים לפי רמה',
+        limitInfo: 'כשמופעל, מספר הרמזים במשחק תלוי ברמה: מתחיל ותוקף - בלי הגבלה, בינוני - 3, קשה - בלי רמזים. כל לחיצה על "מי מאיים?" או "הכלים שלי בסכנה" נספרת כרמז. כשכבוי - רמזים בלי הגבלה בכל הרמות.',
+        captured: 'נאכלו',
+        youCaptured: 'אכלתם',
+        computerCaptured: 'המחשב אכל',
+        howTo: 'איך משחקים?',
+        howTo1: 'לחצו "משחק חדש" כדי לבחור צבע ולהתחיל.',
+        howTo2: 'גררו כלי, או לחצו על כלי ואז על הריבוע שאליו הוא זז.',
+        howTo3: 'לחצו "מי מאיים?" ואז על ריבוע כדי לראות אילו כלים מאיימים עליו. ככל שיותר כלים מאיימים, המסגרת האדומה עבה יותר.',
+        howTo4: 'לחצו "הכלים שלי בסכנה" כדי לראות לרגע את כל הכלים שלכם שמאוימים.',
+        howTo5: 'כשהמלך שלכם בשח הוא מסומן באדום. לחצו "מי מאיים?" ואז על המלך כדי לראות מי נותן שח.',
+        howTo6: 'ברמות מתחיל ותוקף המחשב מזהיר לפני שאתם משאירים כלי בלי הגנה.',
+        pickColor: 'באיזה צבע תשחקו?',
+        white: 'לבן',
+        black: 'שחור',
+        warnTitle: 'רגע, בדקו!',
+        warnUndo: 'אחזיר את המהלך',
+        warnKeep: 'זה המהלך שלי',
+        warnText: 'אחרי המהלך הזה המחשב יכול לאכול את {pieces}. להמשיך?',
+        pieceRef: 'ה{piece} ({sq})',
+        pieces: { p: 'חייל', n: 'סוס', b: 'רץ', r: 'צריח', q: 'מלכה', k: 'מלך' },
+        youWin: 'מט! ניצחתם! 🎉',
+        computerWins: 'מט. המחשב ניצח הפעם - נסו שוב!',
+        stalemate: 'פט - תיקו! 🤝 אין מהלך חוקי, אבל המלך לא בשח.',
+        insufficient: 'תיקו! 🤝 לא נשארו מספיק כלים כדי לתת מט.',
+        youInCheck: 'שח! המלך שלכם מאוים ⚠️',
+        computerInCheck: 'שח למחשב! 👏',
+        noDanger: 'אף כלי שלכם לא מאוים כרגע 👍',
+        hintInfoUnlimited: 'לחצו "מי מאיים?" ואז על ריבוע כדי לראות מי מאיים עליו. הרמז נסגר אוטומטית.',
+        hintInfoNone: 'ברמה קשה אין רמזים - בדקו לבד! 💪',
+        hintInfoLeft: 'נשארו {n} רמזים במשחק הזה. לחצו "מי מאיים?" ואז על ריבוע.',
+        hintInfoOut: 'נגמרו הרמזים למשחק הזה 💪',
+        hintInfoBeginner: ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.',
+        hintsLeft: 'נשארו {n}',
+        noGameToSave: 'אין עדיין משחק לשמירה - התחילו משחק חדש!',
+        savedName: 'משחק של {n} מהלכים - {time}',
+        saved: 'המשחק נשמר!\n{name}',
+        noSavedGames: 'אין משחקים שמורים!',
+        pickSave: 'בחרו משחק לטעינה:',
+        enterNumber: 'הקלידו מספר (1-{n}) או לחצו ביטול:',
+        badNumber: 'מספר לא תקין!',
+        confirmLoad: 'לטעון את המשחק:\n{name}?\n\nהמשחק הנוכחי יאבד!',
+        loaded: 'המשחק נטען!\n{name}',
+        loadError: 'לא הצלחנו לטעון את המשחק. ייתכן שהשמירה פגומה.'
+    },
+    en: {
+        pageTitle: 'Chess Threat Spotter for Kids',
+        appTitle: 'Chess Threat Spotter',
+        subtitle: 'Learn to spot threats and protect your pieces!',
+        dedication: 'Dedicated with love to Adam Wilf ❤️',
+        yourTurn: 'Your turn!',
+        computerThinking: 'Computer is thinking…',
+        newGame: 'New game',
+        undo: 'Undo',
+        save: 'Save',
+        load: 'Load',
+        whoThreatens: "Who's attacking?",
+        myPiecesInDanger: 'My pieces in danger',
+        explain: 'Explain',
+        dangerInfo: 'Tap to briefly mark in red every one of your pieces that is under attack right now.',
+        level: 'Level',
+        level_beginner: 'Beginner',
+        level_attacker: 'Attacker',
+        level_medium: 'Medium',
+        level_hard: 'Hard',
+        caption_beginner: 'The computer takes pieces you leave unprotected. Your pieces in danger are marked, and it warns you before a mistake.',
+        caption_attacker: 'The computer looks for ways to attack your pieces, and warns you before a mistake.',
+        caption_medium: 'The computer thinks one move ahead and never gives pieces away.',
+        caption_hard: 'The computer thinks two moves ahead and looks for forks.',
+        limitHints: 'Limit hints by level',
+        limitInfo: 'When on, the number of hints per game depends on the level: Beginner and Attacker - unlimited, Medium - 3, Hard - none. Every tap on "Who\'s attacking?" or "My pieces in danger" counts as a hint. When off, hints are unlimited on every level.',
+        captured: 'Captured',
+        youCaptured: 'You captured',
+        computerCaptured: 'Computer captured',
+        howTo: 'How to play',
+        howTo1: 'Tap "New game" to pick a color and start.',
+        howTo2: 'Drag a piece, or tap a piece and then the square it should move to.',
+        howTo3: 'Tap "Who\'s attacking?" and then a square to see which pieces attack it. The more attackers, the thicker the red frame.',
+        howTo4: 'Tap "My pieces in danger" to briefly see all of your pieces that are under attack.',
+        howTo5: 'When your king is in check it is marked in red. Tap "Who\'s attacking?" and then the king to see who gives check.',
+        howTo6: 'On Beginner and Attacker the computer warns you before you leave a piece unprotected.',
+        pickColor: 'Which color do you want to play?',
+        white: 'White',
+        black: 'Black',
+        warnTitle: 'Wait, check this!',
+        warnUndo: 'Take it back',
+        warnKeep: 'Keep my move',
+        warnText: 'After this move the computer can capture {pieces}. Continue?',
+        pieceRef: 'your {piece} ({sq})',
+        pieces: { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' },
+        youWin: 'Checkmate! You win! 🎉',
+        computerWins: 'Checkmate. The computer won this time - try again!',
+        stalemate: 'Stalemate - a draw! 🤝 No legal move, but the king is not in check.',
+        insufficient: 'A draw! 🤝 Not enough pieces left to checkmate.',
+        youInCheck: 'Check! Your king is under attack ⚠️',
+        computerInCheck: 'Check on the computer! 👏',
+        noDanger: 'None of your pieces is under attack right now 👍',
+        hintInfoUnlimited: 'Tap "Who\'s attacking?" and then a square to see what attacks it. The hint turns off by itself.',
+        hintInfoNone: 'No hints on Hard - check for yourself! 💪',
+        hintInfoLeft: '{n} hints left this game. Tap "Who\'s attacking?" and then a square.',
+        hintInfoOut: 'No hints left this game 💪',
+        hintInfoBeginner: ' On Beginner, your pieces in danger are marked in red.',
+        hintsLeft: '{n} left',
+        noGameToSave: 'Nothing to save yet - start a new game first!',
+        savedName: 'Game of {n} moves - {time}',
+        saved: 'Game saved!\n{name}',
+        noSavedGames: 'No saved games!',
+        pickSave: 'Choose a game to load:',
+        enterNumber: 'Type a number (1-{n}) or press Cancel:',
+        badNumber: 'Invalid number!',
+        confirmLoad: 'Load this game:\n{name}?\n\nThe current game will be lost!',
+        loaded: 'Game loaded!\n{name}',
+        loadError: 'Could not load the game. The save may be damaged.'
+    }
+};
+let lang = 'he';
+try { if (STRINGS[localStorage.getItem('lang')]) lang = localStorage.getItem('lang'); } catch (e) {}
+
+function t(key, vars = {}) {
+    return String(STRINGS[lang][key] ?? key).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
+}
+
+// Switch every text on the page, plus direction (RTL for Hebrew)
+function applyLanguage(newLang) {
+    lang = STRINGS[newLang] ? newLang : 'he';
+    try { localStorage.setItem('lang', lang); } catch (e) {}
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+    document.title = t('pageTitle');
+    $('[data-i18n]').each(function() { this.textContent = t(this.dataset.i18n); });
+    $('[data-i18n-aria]').each(function() { this.setAttribute('aria-label', t(this.dataset.i18nAria)); });
+    $('.lang-btn').each(function() { this.setAttribute('aria-pressed', String(this.dataset.lang === lang)); });
+    updateStatus();
+    updateCapturedPieces();
+    updateHintInfo();
+}
 let selectedSquare = null; // For tap-to-see-threats feature
 let showingSquareThreats = false;
 let playerColor = 'white'; // Player's color choice
@@ -39,7 +202,11 @@ const config = {
 // Initialize the board
 $(document).ready(function() {
     board = Chessboard('board', config);
-    updateStatus();
+    $(window).on('resize', () => {
+        board.resize();
+        clearSquareThreats();
+        showAutoHints();
+    });
     
     // One delegated handler survives every board redraw (tap-to-move and tap-to-see-threats)
     $board.on('click', '[data-square]', function() {
@@ -51,8 +218,8 @@ $(document).ready(function() {
     $('#undoBtn').on('click', undoMove);
     $('#saveBtn').on('click', saveGame);
     $('#loadBtn').on('click', loadGame);
-    $('#showThreats').on('change', function() {
-        showThreats = this.checked;
+    $('#showThreats').on('click', function() {
+        setThreatMode(!showThreats);
         if (!showThreats) {
             clearSquareThreats();
             showAutoHints();
@@ -64,15 +231,14 @@ $(document).ready(function() {
         showAutoHints();
         updateHintInfo();
     });
-    $('#showDanger').on('change', function() {
-        if (this.checked) flashDangerPieces();
-    });
+    $('#showDanger').on('click', flashDangerPieces);
     $('#limitHints').prop('checked', limitHints).on('change', function() {
         limitHints = this.checked;
         try { localStorage.setItem('limitHints', limitHints ? '1' : '0'); } catch (e) {}
         updateHintInfo();
     });
-    updateHintInfo();
+    $('.lang-btn').on('click', function() { applyLanguage(this.dataset.lang); });
+    applyLanguage(lang);
     // Every "?" button shows/hides the explanation it points to
     $('.help-btn').on('click', function() {
         const $info = $('#' + $(this).attr('aria-controls'));
@@ -87,6 +253,12 @@ $(document).ready(function() {
     $('#warnKeep').on('click', keepWarnedMove);
     $('#warnUndo').on('click', takeBackWarnedMove);
 });
+
+// "Who's attacking?" is armed until the next square tap
+function setThreatMode(on) {
+    showThreats = on;
+    $('#showThreats').attr('aria-pressed', String(on));
+}
 
 // Check if a piece can be dragged
 function onDragStart(source, piece, position, orientation) {
@@ -168,8 +340,8 @@ function afterPlayerMove() {
 
 function showBlunderWarning(squares) {
     const enemy = game.turn();
-    const names = squares.map(sq => 'ה' + getPieceText(game.get(sq).type) + ' (' + sq + ')').join(', ');
-    $('#warnText').text('אחרי המהלך הזה המחשב יכול לאכול את ' + names + '. להמשיך?');
+    const names = squares.map(sq => t('pieceRef', { piece: getPieceText(game.get(sq).type), sq })).join(', ');
+    $('#warnText').text(t('warnText', { pieces: names }));
     squares.forEach(sq => addSquareHighlight(sq, 'threatened-square', attackersOf(sq, enemy).length));
     isComputerTurn = true; // block moves until the child decides
     $('#warnModal').show();
@@ -218,54 +390,26 @@ function isGameOver() {
     return game.in_checkmate() || game.in_stalemate() || game.insufficient_material();
 }
 
-// Update game status display
+// Turn chip and game status, from the child's point of view
 function updateStatus() {
-    let status = '';
-    let moveColor = game.turn() === 'w' ? 'לבן' : 'שחור';
-    let isWhiteTurn = game.turn() === 'w';
-    
-    // Update turn icon and text
-    $('#currentTurnIcon').html(isWhiteTurn ? '♕' : '♛'); // White queen vs Black queen
-    $('#currentTurnIcon').css('color', isWhiteTurn ? '#fff' : '#000');
-    $('#currentTurnIcon').css('text-shadow', isWhiteTurn ? '1px 1px 2px #000' : '1px 1px 2px #fff');
-    $('#currentTurnText').html('תור ה' + moveColor);
-    
-    // Checkmate
-    if (game.in_checkmate()) {
-        status = 'המשחק נגמר! ' + (game.turn() === 'w' ? 'שחור' : 'לבן') + ' ניצח! 🎉';
-    }
-    // Draw
-    else if (game.in_stalemate()) {
-        status = 'פט - תיקו! 🤝 ל' + moveColor + ' אין מהלך חוקי, אבל המלך לא בשח';
-    }
-    else if (game.insufficient_material()) {
-        status = 'תיקו! 🤝 לא נשארו מספיק כלים כדי לתת מט';
-    }
-    // Check
-    else if (game.in_check()) {
-        status = '⚠️ ' + moveColor + ' בשח!';
-    }
-    // Game still on
-    else {
-        status = '';
-    }
-    
-    $('#gameStatus').html(status);
+    const myTurn = game.turn() === (playerColor === 'white' ? 'w' : 'b');
+    $('#currentTurnText').text(myTurn ? t('yourTurn') : t('computerThinking'));
+    $('#turnChip').toggleClass('waiting', !myTurn && !isGameOver());
+
+    let status = '', good = false;
+    if (game.in_checkmate()) { status = myTurn ? t('computerWins') : t('youWin'); good = !myTurn; }
+    else if (game.in_stalemate()) status = t('stalemate');
+    else if (game.insufficient_material()) status = t('insufficient');
+    else if (game.in_check()) { status = myTurn ? t('youInCheck') : t('computerInCheck'); good = !myTurn; }
+    $('#gameStatus').text(status).toggleClass('good', good);
 }
 
-// Removed old threat visualization functions - now using tap-to-see-threats only
-
-// Update captured pieces display
+// Captured pieces, from the child's point of view
 function updateCapturedPieces() {
     const captured = getCapturedPieces();
-    
-    // Display captured white pieces (with white symbols)
-    const whiteSymbols = captured.white.map(p => getPieceSymbol(p, 'white')).join(' ');
-    $('#whiteCaptured').html(whiteSymbols ? 'לבן שנלכד: ' + whiteSymbols : '');
-    
-    // Display captured black pieces (with black symbols)
-    const blackSymbols = captured.black.map(p => getPieceSymbol(p, 'black')).join(' ');
-    $('#blackCaptured').html(blackSymbols ? 'שחור שנלכד: ' + blackSymbols : '');
+    const mine = playerColor, theirs = playerColor === 'white' ? 'black' : 'white';
+    $('#youCaptured').text(captured[theirs].map(p => getPieceSymbol(p, theirs)).join(''));
+    $('#computerCaptured').text(captured[mine].map(p => getPieceSymbol(p, mine)).join(''));
 }
 
 // Get lists of captured pieces
@@ -458,24 +602,13 @@ function showThreatsToSquare(square) {
             addSquareHighlight(attackerSquare, 'square-attacker', 0);
         });
         
-        // Show info about threats
-        const piece = game.get(square);
-        const pieceText = piece ? `${getPieceText(piece.type)} ${piece.color === 'w' ? 'לבן' : 'שחור'}` : 'ריק';
-        const currentPlayer = game.turn();
-        const opponentText = currentPlayer === 'w' ? 'שחור' : 'לבן';
-        console.log(`כיכר ${square} (${pieceText}) מאוימת על ידי ${attackers.length} כלים ${opponentText}:`, attackers);
     } else {
         // No threats - just show blue selection
         addSquareHighlight(square, 'selected-square', 0);
-        
-        const currentPlayer = game.turn();
-        const opponentText = currentPlayer === 'w' ? 'שחור' : 'לבן';
-        console.log(`כיכר ${square} לא מאוימת על ידי כלים ${opponentText}`);
     }
     
     // Turn off the toggle after showing threats (makes kid "work" for the hint)
-    showThreats = false;
-    $('#showThreats').prop('checked', false);
+    setThreatMode(false);
 }
 
 // Squares of `color` pieces that attack `square` (pins are ignored, like "who is aiming at this square")
@@ -551,13 +684,15 @@ function updateHintInfo() {
     const limit = limitHints ? level.hintLimit : Infinity;
     const left = limit - hintsUsed;
     $('#showThreats, #showDanger').prop('disabled', left <= 0);
+    $('#hintCount').prop('hidden', !(limit > 0 && limit < Infinity)).text(t('hintsLeft', { n: Math.max(left, 0) }));
     let text;
-    if (limit === Infinity) text = 'הפעילו ואז לחצו על ריבוע כדי לראות מי מאיים עליו. הרמז נסגר אוטומטית.';
-    else if (limit === 0) text = 'ברמה קשה אין רמזים - בדקו לבד! 💪';
-    else if (left > 0) text = `נשארו ${left} רמזים במשחק הזה. הפעילו ואז לחצו על ריבוע.`;
-    else text = 'נגמרו הרמזים למשחק הזה 💪';
-    if (level.autoHints) text += ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.';
+    if (limit === Infinity) text = t('hintInfoUnlimited');
+    else if (limit === 0) text = t('hintInfoNone');
+    else if (left > 0) text = t('hintInfoLeft', { n: left });
+    else text = t('hintInfoOut');
+    if (level.autoHints) text += t('hintInfoBeginner');
     $('#hintInfo').text(text);
+    $('#levelCaption').text(t('caption_' + difficulty));
 }
 
 // One-shot hint: mark every piece of the child's that is attacked right now, for a moment
@@ -566,7 +701,6 @@ function flashDangerPieces() {
     const enemy = me === 'w' ? 'b' : 'w';
     hintsUsed++;
     updateHintInfo();
-    $('#showDanger').prop('checked', false);
     $('.danger-flash').remove();
     let found = 0;
     game.board().forEach((row, r) => row.forEach((p, c) => {
@@ -578,7 +712,7 @@ function flashDangerPieces() {
             addSquareHighlight(sq, 'threatened-square', attackers)?.addClass('danger-flash');
         }
     }));
-    if (!found) $('#gameStatus').text('אף כלי שלכם לא מאוים כרגע 👍');
+    if (!found) $('#gameStatus').text(t('noDanger')).addClass('good');
     setTimeout(() => {
         $('.danger-flash').remove();
         if (!found) updateStatus();
@@ -626,42 +760,7 @@ function addSquareHighlight(square, className, threatCount) {
 }
 
 function getPieceText(pieceType) {
-    const pieces = {
-        'p': 'חייל',
-        'n': 'סוס',
-        'b': 'רץ',
-        'r': 'צריח',
-        'q': 'מלכה',
-        'k': 'מלך'
-    };
-    return pieces[pieceType] || pieceType;
-}
-
-// Toggle collapsible difficulty section
-window.toggleDifficulty = function() {
-    const selector = document.getElementById('difficultySelector');
-    const arrow = document.getElementById('collapseArrow');
-    
-    if (selector.classList.contains('collapsed')) {
-        selector.classList.remove('collapsed');
-        arrow.textContent = '▲';
-    } else {
-        selector.classList.add('collapsed'); 
-        arrow.textContent = '▼';
-    }
-}
-
-window.toggleInstructions = function() {
-    const content = document.getElementById('instructionsContent');
-    const arrow = document.getElementById('instructionsArrow');
-    
-    if (content.classList.contains('collapsed')) {
-        content.classList.remove('collapsed');
-        arrow.textContent = '▲';
-    } else {
-        content.classList.add('collapsed'); 
-        arrow.textContent = '▼';
-    }
+    return STRINGS[lang].pieces[pieceType] || pieceType;
 }
 
 // Show color selection modal
@@ -688,8 +787,7 @@ function startNewGame(color) {
     clearSquareThreats();
     
     // Turn off threat toggle on new game
-    showThreats = false;
-    $('#showThreats').prop('checked', false);
+    setThreatMode(false);
     
     updateStatus();
     updateCapturedPieces();
@@ -704,7 +802,7 @@ function startNewGame(color) {
 // Save game functionality
 function saveGame() {
     if (game.history().length === 0) {
-        alert('אין משחק לשמירה - התחילו משחק חדש תחילה!');
+        alert(t('noGameToSave'));
         return;
     }
     
@@ -713,7 +811,7 @@ function saveGame() {
         playerColor: playerColor,
         difficulty: difficulty,
         pgn: game.pgn(), // full move list, so captured pieces and undo survive a reload
-        timestamp: new Date().toLocaleString('he-IL'),
+        timestamp: new Date().toLocaleString(lang === 'he' ? 'he-IL' : 'en-US'),
         moves: game.history().length
     };
     
@@ -722,7 +820,7 @@ function saveGame() {
     
     // Add the new game with a unique ID
     gameState.id = Date.now();
-    gameState.name = `משחק ${gameState.moves} מהלכים - ${gameState.timestamp}`;
+    gameState.name = t('savedName', { n: gameState.moves, time: gameState.timestamp });
     savedGames.push(gameState);
     
     // Keep only the last 10 saved games
@@ -732,7 +830,7 @@ function saveGame() {
     
     localStorage.setItem('chessGames', JSON.stringify(savedGames));
     
-    alert(`המשחק נשמר בהצלחה! \n${gameState.name}`);
+    alert(t('saved', { name: gameState.name }));
 }
 
 // Load game functionality
@@ -740,16 +838,16 @@ function loadGame() {
     const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
     
     if (savedGames.length === 0) {
-        alert('אין משחקים שמורים!');
+        alert(t('noSavedGames'));
         return;
     }
     
     // Create selection dialog
-    let options = 'בחרו משחק לטעינה:\n\n';
+    let options = t('pickSave') + '\n\n';
     savedGames.forEach((game, index) => {
         options += `${index + 1}. ${game.name}\n`;
     });
-    options += '\nהזינו מספר (1-' + savedGames.length + ') או לחצו Cancel לביטול:';
+    options += '\n' + t('enterNumber', { n: savedGames.length });
     
     const choice = prompt(options);
     
@@ -758,14 +856,14 @@ function loadGame() {
     const gameIndex = parseInt(choice) - 1;
     
     if (gameIndex < 0 || gameIndex >= savedGames.length || isNaN(gameIndex)) {
-        alert('מספר לא תקין!');
+        alert(t('badNumber'));
         return;
     }
     
     const savedGame = savedGames[gameIndex];
     
     // Confirm loading
-    if (!confirm(`לטעון את המשחק:\n${savedGame.name}?\n\nהמשחק הנוכחי יאבד!`)) {
+    if (!confirm(t('confirmLoad', { name: savedGame.name }))) {
         return;
     }
     
@@ -785,8 +883,7 @@ function loadGame() {
         
         // Clear threats and update status
         clearSquareThreats();
-        showThreats = false;
-        $('#showThreats').prop('checked', false);
+        setThreatMode(false);
         
         updateStatus();
         updateCapturedPieces();
@@ -794,10 +891,10 @@ function loadGame() {
         showAutoHints();
         afterPlayerMove(); // saved while the computer was thinking: let it move
 
-        alert(`המשחק נטען בהצלחה!\n${savedGame.name}`);
+        alert(t('loaded', { name: savedGame.name }));
         
     } catch (error) {
-        alert('שגיאה בטעינת המשחק. הקובץ עלול להיות פגום.');
+        alert(t('loadError'));
         console.error('Load game error:', error);
     }
 }
