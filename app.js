@@ -11,6 +11,7 @@ let isComputerTurn = false;
 let selectedSquare = null; // For tap-to-see-threats feature
 let showingSquareThreats = false;
 let playerColor = 'white'; // Player's color choice
+let moveFrom = null; // Tap-to-move: selected source square
 
 // Configuration for chessboard
 const config = {
@@ -73,8 +74,19 @@ function onDragStart(source, piece, position, orientation) {
     }
 }
 
-// Handle piece drop
+// Handle piece drop (a tap on own piece arrives here as source === target)
 function onDrop(source, target) {
+    if (source === target) {
+        clearSquareThreats();
+        moveFrom = source;
+        addSquareHighlight(source, 'selected-square', 0);
+        return 'snapback';
+    }
+    if (!tryMove(source, target)) return 'snapback';
+}
+
+// Make the player's move; returns false if illegal
+function tryMove(source, target) {
     // Save current position for undo
     moveHistory.push(game.fen());
     
@@ -85,10 +97,9 @@ function onDrop(source, target) {
         promotion: 'q' // Always promote to queen for simplicity
     });
     
-    // If illegal move, snap back
     if (move === null) {
         moveHistory.pop();
-        return 'snapback';
+        return false;
     }
     
     updateStatus();
@@ -102,6 +113,7 @@ function onDrop(source, target) {
     if (gameMode === 'computer' && game.turn() === computerColor && !game.game_over()) {
         setTimeout(makeComputerMove, 500); // Small delay for better UX
     }
+    return true;
 }
 
 // Update board position after the piece snap
@@ -368,8 +380,14 @@ function addSquareClickHandlers() {
             const $square = $board.find('.square-' + square);
             
             $square.off('click').on('click', function(e) {
-                // Only show threats if the toggle is enabled
-                if (!showThreats) return;
+                // Tap-to-move: second tap on a destination square
+                if (!showThreats) {
+                    if (!moveFrom || square === moveFrom) return;
+                    const from = moveFrom;
+                    clearSquareThreats();
+                    if (tryMove(from, square)) onSnapEnd();
+                    return;
+                }
                 
                 // Show threats and automatically disable toggle
                 showThreatsToSquare(square);
@@ -515,6 +533,7 @@ function clearSquareThreats() {
     $('.square-highlight').remove();
     selectedSquare = null;
     showingSquareThreats = false;
+    moveFrom = null;
 }
 
 function addSquareHighlight(square, className, threatCount) {

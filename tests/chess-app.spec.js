@@ -336,3 +336,15 @@ test.describe('Chess Threat Visualizer - Threat Detection', () => {
     await expect(threatIndicators).toHaveCount(0);
   });
 });
+
+test('should move a piece by tapping source then destination', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.click('#resetBtn');
+  await page.click('#playWhite');
+  await page.waitForTimeout(1500);
+  await page.click('.square-e2');
+  await page.click('.square-e4');
+  await expect(page.locator('.square-e4 img[data-piece="wP"]')).toHaveCount(1);
+  await expect(page.locator('.square-e2 img')).toHaveCount(0);
+});
