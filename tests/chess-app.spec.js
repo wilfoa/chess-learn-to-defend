@@ -43,9 +43,9 @@ test.describe('Basic loading', () => {
 
   test('hint explanation is hidden until "?" is clicked', async ({ page }) => {
     await expect(page.locator('#hintInfo')).toBeHidden();
-    await page.click('#hintHelp');
+    await page.click('[aria-controls="hintInfo"]');
     await expect(page.locator('#hintInfo')).toContainText('לחצו על ריבוע');
-    await page.click('#hintHelp');
+    await page.click('[aria-controls="hintInfo"]');
     await expect(page.locator('#hintInfo')).toBeHidden();
   });
 
@@ -237,5 +237,41 @@ test.describe('Teaching levels', () => {
     await page.click('.square-a1');
     await expect(page.locator('.threatened-square')).toHaveCount(1);
     await expect(page.locator('.square-attacker')).toHaveCount(1);
+  });
+
+  test('hints are unlimited unless limiting by level is switched on', async ({ page }) => {
+    await page.evaluate(() => { difficulty = 'hard'; updateHintInfo(); });
+    await expect(page.locator('#showThreats')).toBeEnabled();
+    await page.locator('#limitHints').check({ force: true });
+    await expect(page.locator('#showThreats')).toBeDisabled();
+    await expect(page.locator('#showDanger')).toBeDisabled();
+    await page.evaluate(() => { difficulty = 'medium'; hintsUsed = 2; updateHintInfo(); });
+    await expect(page.locator('#showDanger')).toBeEnabled();
+    await page.locator('#showDanger').click({ force: true }); // third and last hint
+    await expect(page.locator('#showThreats')).toBeDisabled();
+    await page.locator('#limitHints').uncheck({ force: true });
+    await expect(page.locator('#showThreats')).toBeEnabled();
+  });
+
+  test('"my pieces in danger" briefly marks every attacked piece', async ({ page }) => {
+    await page.evaluate(() => {
+      game.load('4k3/8/8/8/8/q1N5/8/R3K3 w - - 0 1'); // black queen hits the knight and the rook
+      board.position(game.fen(), false);
+    });
+    await page.locator('#showDanger').click({ force: true });
+    await expect(page.locator('.danger-flash')).toHaveCount(2);
+    await expect(page.locator('#showDanger')).not.toBeChecked();
+    await expect(page.locator('.danger-flash')).toHaveCount(0, { timeout: 4000 });
+  });
+
+  test('pawn is called חייל', async ({ page }) => {
+    const text = await page.evaluate(() => {
+      difficulty = 'beginner';
+      game.load('4k3/8/8/8/2q5/8/3P4/4K3 w - - 0 1');
+      board.position(game.fen(), false);
+      tryMove('d2', 'd3'); // the pawn steps next to the queen
+      return $('#warnText').text();
+    });
+    expect(text).toContain('החייל');
   });
 });

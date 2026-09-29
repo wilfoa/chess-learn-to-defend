@@ -7,7 +7,9 @@ let debugMode = false; // Set to true to see debug info
 let gameMode = 'computer'; // Always play against computer
 let difficulty = 'beginner'; // key of LEVELS
 let isComputerTurn = false;
-let hintsUsed = 0; // threat hints used this game (limited on higher levels)
+let hintsUsed = 0; // detector uses this game (threats + danger), counted against the level's limit
+let limitHints = false; // off: unlimited hints on every level; on: LEVELS[...].hintLimit applies
+try { limitHints = localStorage.getItem('limitHints') === '1'; } catch (e) {}
 
 // What each level teaches. depth: search depth (none = teaching moves);
 // blunder: chance the computer leaves one of its pieces hanging on purpose;
@@ -62,10 +64,20 @@ $(document).ready(function() {
         showAutoHints();
         updateHintInfo();
     });
+    $('#showDanger').on('change', function() {
+        if (this.checked) flashDangerPieces();
+    });
+    $('#limitHints').prop('checked', limitHints).on('change', function() {
+        limitHints = this.checked;
+        try { localStorage.setItem('limitHints', limitHints ? '1' : '0'); } catch (e) {}
+        updateHintInfo();
+    });
     updateHintInfo();
-    $('#hintHelp').on('click', function() {
-        const show = $('#hintInfo').prop('hidden');
-        $('#hintInfo').prop('hidden', !show);
+    // Every "?" button shows/hides the explanation it points to
+    $('.help-btn').on('click', function() {
+        const $info = $('#' + $(this).attr('aria-controls'));
+        const show = $info.prop('hidden');
+        $info.prop('hidden', !show);
         $(this).attr('aria-expanded', show);
     });
 
@@ -448,7 +460,7 @@ function showThreatsToSquare(square) {
         
         // Show info about threats
         const piece = game.get(square);
-        const pieceText = piece ? `${piece.color === 'w' ? 'לבן' : 'שחור'} ${getPieceText(piece.type)}` : 'ריק';
+        const pieceText = piece ? `${getPieceText(piece.type)} ${piece.color === 'w' ? 'לבן' : 'שחור'}` : 'ריק';
         const currentPlayer = game.turn();
         const opponentText = currentPlayer === 'w' ? 'שחור' : 'לבן';
         console.log(`כיכר ${square} (${pieceText}) מאוימת על ידי ${attackers.length} כלים ${opponentText}:`, attackers);
@@ -533,18 +545,44 @@ function showCheckMark() {
     addSquareHighlight(kingSq, 'check-square', 0);
 }
 
-// Hint budget per level; the toggle is disabled when it runs out
+// Hint budget (only when limits are on); both detectors are disabled when it runs out
 function updateHintInfo() {
     const level = LEVELS[difficulty];
-    const left = level.hintLimit - hintsUsed;
-    $('#showThreats').prop('disabled', left <= 0);
+    const limit = limitHints ? level.hintLimit : Infinity;
+    const left = limit - hintsUsed;
+    $('#showThreats, #showDanger').prop('disabled', left <= 0);
     let text;
-    if (level.hintLimit === Infinity) text = 'הפעילו ואז לחצו על ריבוע לרמז. הרמז נסגר אוטומטית.';
-    else if (level.hintLimit === 0) text = 'ברמה קשה אין רמזים - בדקו לבד! 💪';
+    if (limit === Infinity) text = 'הפעילו ואז לחצו על ריבוע כדי לראות מי מאיים עליו. הרמז נסגר אוטומטית.';
+    else if (limit === 0) text = 'ברמה קשה אין רמזים - בדקו לבד! 💪';
     else if (left > 0) text = `נשארו ${left} רמזים במשחק הזה. הפעילו ואז לחצו על ריבוע.`;
     else text = 'נגמרו הרמזים למשחק הזה 💪';
     if (level.autoHints) text += ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.';
     $('#hintInfo').text(text);
+}
+
+// One-shot hint: mark every piece of the child's that is attacked right now, for a moment
+function flashDangerPieces() {
+    const me = playerColor === 'white' ? 'w' : 'b';
+    const enemy = me === 'w' ? 'b' : 'w';
+    hintsUsed++;
+    updateHintInfo();
+    $('#showDanger').prop('checked', false);
+    $('.danger-flash').remove();
+    let found = 0;
+    game.board().forEach((row, r) => row.forEach((p, c) => {
+        if (!p || p.color !== me || p.type === 'k') return;
+        const sq = String.fromCharCode(97 + c) + (8 - r);
+        const attackers = attackersOf(sq, enemy).length;
+        if (attackers) {
+            found++;
+            addSquareHighlight(sq, 'threatened-square', attackers)?.addClass('danger-flash');
+        }
+    }));
+    if (!found) $('#gameStatus').text('אף כלי שלכם לא מאוים כרגע 👍');
+    setTimeout(() => {
+        $('.danger-flash').remove();
+        if (!found) updateStatus();
+    }, 2500);
 }
 
 function clearSquareThreats() {
@@ -584,11 +622,12 @@ function addSquareHighlight(square, className, threatCount) {
     });
     
     $board.append(highlight);
+    return highlight;
 }
 
 function getPieceText(pieceType) {
     const pieces = {
-        'p': 'רגלי',
+        'p': 'חייל',
         'n': 'סוס',
         'b': 'רץ',
         'r': 'צריח',

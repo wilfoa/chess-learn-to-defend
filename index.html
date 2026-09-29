@@ -38,12 +38,33 @@
                     <div class="two-column-row">
                         <div class="column">
                             <h3>תצוגת איומים</h3>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="showThreats">
-                                <span class="slider"></span>
-                            </label>
-                            <button type="button" id="hintHelp" class="help-btn" aria-label="הסבר" aria-expanded="false" aria-controls="hintInfo">?</button>
-                            <p id="hintInfo" hidden style="font-size: 0.9em; color: #666; margin-top: 10px;"></p>
+                            <div class="toggle-row">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="showThreats">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="showThreats" class="toggle-caption">מי מאיים?</label>
+                                <button type="button" class="help-btn" aria-label="הסבר" aria-expanded="false" aria-controls="hintInfo">?</button>
+                            </div>
+                            <p id="hintInfo" class="help-text" hidden></p>
+                            <div class="toggle-row">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="showDanger">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="showDanger" class="toggle-caption">הכלים שלי בסכנה</label>
+                                <button type="button" class="help-btn" aria-label="הסבר" aria-expanded="false" aria-controls="dangerInfo">?</button>
+                            </div>
+                            <p id="dangerInfo" class="help-text" hidden>הפעילו כדי לסמן לרגע באדום את כל הכלים שלכם שמאוימים עכשיו.</p>
+                            <div class="toggle-row">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="limitHints">
+                                    <span class="slider"></span>
+                                </label>
+                                <label for="limitHints" class="toggle-caption">הגבלת רמזים לפי רמה</label>
+                                <button type="button" class="help-btn" aria-label="הסבר" aria-expanded="false" aria-controls="limitInfo">?</button>
+                            </div>
+                            <p id="limitInfo" class="help-text" hidden>כשמופעל, מספר הרמזים במשחק תלוי ברמה: מתחיל ותוקף - בלי הגבלה, בינוני - 3, קשה - בלי רמזים. כל שימוש ב"מי מאיים?" או ב"הכלים שלי בסכנה" נספר כרמז. כבוי - רמזים בלי הגבלה בכל הרמות.</p>
                         </div>
                         
                         <div class="column">

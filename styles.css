@@ -207,16 +207,34 @@ header h1 {
     margin-right: 10px;
 }
 
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.toggle-caption {
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .help-btn {
     width: 26px;
     height: 26px;
+    flex-shrink: 0;
     border-radius: 50%;
     border: 1px solid #999;
     background: #fff;
     color: #555;
     font-weight: bold;
     cursor: pointer;
-    vertical-align: super;
+}
+
+.help-text {
+    font-size: 0.9em;
+    color: #555;
+    margin: 0 0 8px;
 }
 
 .toggle-switch input {
