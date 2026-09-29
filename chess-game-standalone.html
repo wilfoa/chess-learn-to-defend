@@ -3,212 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>גלאי איומים בשחמט לילדים</title>
-    
-    <!-- Chessboard.js CSS -->
+    <title>על המשמר! שחמט לילדים</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#3B5BDB">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-    
-    <!-- Custom CSS -->
     <style>
-        * {
+        :root {
+    --ground: #F4F2EE;
+    --card: #FFFFFF;
+    --ink: #1F2433;
+    --muted: #4A5163;
+    --soft: #EEF0F4;
+    --blue: #3B5BDB;
+    --blue-soft: #EEF1FB;
+    --orange: #F08C00;
+    --orange-soft: #FFF4E6;
+    --orange-ink: #7A4300;
+    --red: #C92A2A;
+    --red-soft: #FFF0F0;
+    --green: #2B9A5A;
+    --green-soft: #E7F5EC;
+    --green-ink: #1B6B3A;
+    --shadow: 0 6px 24px rgba(31, 36, 51, 0.08);
+}
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Rubik', system-ui, sans-serif;
+    background: var(--ground);
+    color: var(--ink);
     min-height: 100vh;
     padding: 20px;
-    direction: rtl;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
 header {
     text-align: center;
-    margin-bottom: 30px;
-    color: white;
+    margin-bottom: 20px;
 }
 
 header h1 {
-    font-size: 3em;
-    margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    font-size: 2.2em;
+    font-weight: 700;
 }
 
 .subtitle {
-    font-size: 1.2em;
-    opacity: 0.95;
+    font-size: 1.1em;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.dedication {
+    font-size: 0.9em;
+    font-style: italic;
+    color: var(--muted);
+    margin-top: 4px;
 }
 
 .game-container {
     display: flex;
-    gap: 30px;
+    gap: 24px;
     justify-content: center;
     align-items: flex-start;
-    flex-wrap: nowrap;
 }
 
 .board-wrapper {
-    position: relative;
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    background: var(--card);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: var(--shadow);
 }
 
 #board {
     width: 500px;
-    height: 500px;
+    touch-action: none; /* stop page scrolling while dragging pieces on tablets */
 }
 
+/* ---- Controls card ---- */
 .controls {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    width: 500px;
-    min-width: 500px;
-    max-width: 500px;
-}
-
-.control-section {
-    margin-bottom: 25px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.control-section:last-child {
-    border-bottom: none;
-}
-
-/* Two column layout */
-.two-column-row {
+    width: 380px;
+    flex-shrink: 0;
+    background: var(--card);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: var(--shadow);
     display: flex;
-    gap: 20px;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.column {
-    flex: 1;
-}
-
-/* Compact turn indicator */
-.turn-indicator-compact {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: #f0f0f0;
-    border-radius: 8px;
-    margin: 10px 0;
-}
-
-.turn-icon {
-    font-size: 1.5em;
-    line-height: 1;
-}
-
-#currentTurnText {
-    font-weight: bold;
-    font-size: 0.9em;
-}
-
-/* Collapsible sections */
-.collapsible-header {
+.card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-    padding: 5px 0;
-    user-select: none;
+    gap: 8px;
 }
 
-.collapsible-header:hover {
-    background: rgba(0,0,0,0.05);
-    border-radius: 5px;
-    padding: 5px 10px;
+.turn-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--green-soft);
+    color: var(--green-ink);
+    font-weight: 700;
 }
 
-.collapse-arrow {
-    font-size: 1.2em;
-    transition: transform 0.3s ease;
+.turn-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
 }
 
-.collapse-arrow.rotated {
-    transform: rotate(180deg);
+.turn-chip.waiting {
+    background: var(--soft);
+    color: var(--muted);
 }
 
-.difficulty-selector.collapsed,
-.instructions-content.collapsed {
-    display: none;
+.turn-chip.waiting .turn-dot {
+    background: var(--muted);
+    animation: pulse 1s ease-in-out infinite alternate;
 }
 
-.difficulty-selector {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
+.lang-switch {
+    display: flex;
+    padding: 3px;
+    background: var(--soft);
+    border-radius: 999px;
+}
+
+.lang-btn {
+    border: none;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.lang-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: #fff;
+}
+
+.toolbar {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.tool-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.tool-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+}
+
+.tool-primary .tool-icon {
+    background: var(--blue);
+    color: #fff;
+}
+
+.tool-btn:hover .tool-icon {
+    transform: translateY(-2px);
+}
+
+.tool-btn:active .tool-icon {
+    transform: scale(0.95);
+}
+
+svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+[dir="rtl"] .icon-undo {
+    transform: scaleX(-1);
+}
+
+/* Hint buttons with a "?" beside them */
+.hint-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hint-btn {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    font-size: 17px;
+    font-weight: 700;
+    transition: transform 0.15s ease;
+}
+
+.hint-btn:active {
+    transform: scale(0.98);
+}
+
+.hint-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.hint-threats {
+    border: 2px solid var(--orange);
+    background: var(--orange-soft);
+    color: var(--orange-ink);
+}
+
+.hint-threats[aria-pressed="true"] {
+    background: var(--orange);
+    color: #fff;
+}
+
+.hint-danger {
+    border: 2px solid #E8A3A3;
+    background: var(--red-soft);
+    color: var(--red);
+}
+
+.hint-count {
+    margin-inline-start: auto;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--orange-ink);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.help-btn {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid #B5BAC6;
+    background: #fff;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.help-btn[aria-expanded="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+.help-text {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--muted);
+    margin-top: -8px;
+}
+
+/* Sections */
+.section {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.difficulty-selector label {
-    font-size: 0.9em;
-    line-height: 1.3;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
+.section-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
 }
 
-.control-section h3 {
-    color: #333;
-    margin-bottom: 15px;
-    font-size: 1.2em;
+.segmented {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    background: var(--soft);
+    border-radius: 14px;
 }
 
-.btn {
-    padding: 12px 20px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
+.segmented label {
+    position: relative;
+}
+
+.segmented input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
     cursor: pointer;
-    margin: 5px;
-    transition: all 0.3s ease;
-    font-weight: 600;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+.segmented span {
+    display: block;
+    text-align: center;
+    padding: 10px 0;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    transition: background 0.15s ease;
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+.segmented input:checked + span {
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
 }
 
-.btn-secondary {
-    background: #f0f0f0;
-    color: #333;
+.segmented input:focus-visible + span {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
 }
 
-.btn-secondary:hover {
-    background: #e0e0e0;
-    transform: translateY(-2px);
+.level-caption {
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 1.3em;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.toggle-caption {
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    flex-grow: 1;
 }
 
 .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 60px;
-    height: 30px;
-    margin-right: 10px;
+    width: 44px;
+    height: 26px;
+    flex-shrink: 0;
 }
 
 .toggle-switch input {
@@ -222,220 +397,186 @@ header h1 {
 
 .slider {
     position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 30px;
+    inset: 0;
+    background-color: #C9CDD6;
+    transition: 0.2s;
+    border-radius: 999px;
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 22px;
-    width: 22px;
-    left: 4px;
-    bottom: 4px;
+    height: 20px;
+    width: 20px;
+    inset-inline-start: 3px;
+    bottom: 3px;
     background-color: white;
-    transition: .4s;
+    transition: 0.2s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: #667eea;
+    background-color: var(--blue);
 }
 
 input:checked + .slider:before {
-    transform: translateX(30px);
+    transform: translateX(18px);
 }
 
-.label-text {
-    margin-left: 70px;
-    font-weight: 600;
-}
-
-.threat-options {
-    margin-top: 15px;
-}
-
-.threat-options label {
-    display: block;
-    margin: 10px 0;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
-
-.threat-options label:hover {
-    background: #f5f5f5;
-}
-
-.threat-options input[type="radio"] {
-    margin-right: 10px;
-}
-
-.turn-indicator {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: #333;
-    padding: 10px;
-    background: #f0f0f0;
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.status {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #d32f2f;
-    text-align: center;
-    min-height: 30px;
-}
-
-.captured-pieces {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+[dir="rtl"] input:checked + .slider:before {
+    transform: translateX(-18px);
 }
 
 .captured-row {
-    font-size: 1.8em;
-    min-height: 35px;
-    background: #f5f5f5;
-    padding: 8px 12px;
-    border-radius: 5px;
-    margin: 5px 0;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    min-height: 44px;
+    padding: 6px 14px;
+    background: #F7F7F9;
+    border-radius: 12px;
+    font-size: 14px;
+    color: var(--muted);
 }
 
+.captured-pieces {
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--ink);
+}
+
+/* How-to panel */
 .info-panel {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    margin-top: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    background: var(--card);
+    border-radius: 24px;
+    padding: 18px 22px;
+    margin-top: 24px;
+    box-shadow: var(--shadow);
 }
 
-.info-panel h3 {
-    color: #333;
-    margin-bottom: 15px;
+.info-panel summary {
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .info-panel ul {
-    list-style: none;
-    padding: 0;
+    margin-top: 12px;
+    padding-inline-start: 20px;
+    color: var(--muted);
+    line-height: 1.7;
 }
 
-.info-panel li {
-    padding: 8px 0;
-    font-size: 1.1em;
-    color: #555;
-}
-
-/* Threat indicators */
-.threat-indicator {
-    z-index: 10;
-    border-radius: 4px;
-    animation: pulse 2s infinite;
-}
-
-.threatened-piece {
-    background: rgba(255, 0, 0, 0.4);
-    border: 3px solid rgba(255, 0, 0, 0.8);
-}
-
-.attacking-piece {
-    background: rgba(255, 193, 7, 0.3);
-    border: 3px solid rgba(255, 193, 7, 0.8);
-}
-
-@keyframes pulse {
-    0% {
-        opacity: 0.8;
-    }
-    50% {
-        opacity: 0.4;
-    }
-    100% {
-        opacity: 0.8;
-    }
-}
-
-/* Square highlighting for tap-to-see-threats */
+/* ---- Board highlights ---- */
 .square-highlight {
     border-radius: 4px;
     pointer-events: none;
     animation: pulse 2s infinite;
 }
 
+@keyframes pulse {
+    0% { opacity: 0.85; }
+    50% { opacity: 0.45; }
+    100% { opacity: 0.85; }
+}
+
 .selected-square {
-    background: rgba(0, 123, 255, 0.4);
-    border: 3px solid rgba(0, 123, 255, 0.8);
+    background: rgba(59, 91, 219, 0.35);
+    border: 3px solid rgba(59, 91, 219, 0.9);
 }
 
 .threatened-square {
     background: rgba(255, 0, 0, 0.2);
     border-style: solid;
-    border-color: rgba(255, 0, 0, 0.9);
+    border-color: rgba(220, 0, 0, 0.9);
 }
 
 .square-attacker {
-    background: rgba(255, 165, 0, 0.3);
-    border: 3px solid rgba(255, 165, 0, 0.8);
+    background: rgba(240, 140, 0, 0.3);
+    border: 3px solid rgba(240, 140, 0, 0.9);
 }
 
-/* Modal styles */
+/* King in check: pulsing red ring with a small alert badge */
+.check-square {
+    border: 4px solid #e00;
+    background: radial-gradient(circle, rgba(255, 0, 0, 0.45) 0%, rgba(255, 0, 0, 0) 75%);
+    animation: check-pulse 1s ease-in-out infinite alternate;
+}
+
+.check-square::after {
+    content: '⚠️';
+    position: absolute;
+    top: -2px;
+    right: 0;
+    font-size: 14px;
+    line-height: 1;
+}
+
+@keyframes check-pulse {
+    from { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.6) inset; }
+    to { box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.6) inset; }
+}
+
+/* ---- Dialogs ---- */
 .modal {
     display: none;
     position: fixed;
     z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    inset: 0;
+    background-color: rgba(31, 36, 51, 0.45);
+    backdrop-filter: blur(4px);
 }
 
 .modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 30px;
-    border-radius: 15px;
-    width: 300px;
+    background: var(--card);
+    margin: 15vh auto 0;
+    padding: 28px;
+    border-radius: 24px;
+    width: 340px;
     max-width: 90%;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    animation: modalSlideIn 0.3s ease-out;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.25s ease-out;
 }
 
 @keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-content h3 {
-    color: #333;
-    margin-bottom: 25px;
-    font-size: 1.5em;
+    margin-bottom: 20px;
+    font-size: 1.4em;
+}
+
+#warnText {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pill-btn {
+    padding: 14px 18px;
+    border: none;
+    border-radius: 14px;
+    background: var(--soft);
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.pill-primary {
+    background: var(--blue);
+    color: #fff;
 }
 
 .color-options {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     justify-content: center;
 }
 
@@ -443,39 +584,21 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 20px;
+    min-width: 110px;
     border: 3px solid transparent;
-    border-radius: 12px;
-    background: #f8f8f8;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    border-radius: 18px;
+    background: var(--soft);
+    color: var(--ink);
     font-size: 1.1em;
-    font-weight: bold;
-    min-width: 100px;
+    font-weight: 700;
+    transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .color-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.white-btn {
-    color: #333;
-}
-
-.white-btn:hover {
-    border-color: #667eea;
-    background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
-}
-
-.black-btn {
-    color: #333;
-}
-
-.black-btn:hover {
-    border-color: #333;
-    background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+    border-color: var(--blue);
+    transform: translateY(-2px);
 }
 
 .piece-icon {
@@ -483,290 +606,351 @@ input:checked + .slider:before {
     line-height: 1;
 }
 
-/* Responsive design */
-@media (max-width: 992px) {
-    .game-container {
-        flex-wrap: wrap;
-    }
+/* Floating message: never pushes the layout */
+.toast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translate(-50%, -20px);
+    width: max-content;
+    max-width: min(90vw, 460px);
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: var(--red);
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(31, 36, 51, 0.25);
+    z-index: 900;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
 }
 
-/* Mobile optimizations */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-        overflow-x: hidden;
-    }
-    
-    header h1 {
-        font-size: 2em;
-    }
-    
+.toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.toast.good {
+    background: var(--green-ink);
+}
+
+/* Save / load dialogs */
+.modal-note {
+    color: var(--muted);
+    font-size: 14px;
+    margin: -8px 0 14px;
+}
+
+.field-label {
+    display: block;
+    text-align: start;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.text-field {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border: 2px solid #D5D9E2;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 16px; /* 16px keeps iOS from zooming in */
+}
+
+.text-field:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.saved-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 50vh;
+    overflow-y: auto;
+    margin-bottom: 14px;
+}
+
+.saved-row {
+    display: flex;
+    gap: 6px;
+}
+
+.saved-item {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: var(--blue-soft);
+    color: var(--ink);
+    text-align: start;
+}
+
+.saved-item:hover {
+    border-color: var(--blue);
+}
+
+.saved-name {
+    font-weight: 700;
+}
+
+.saved-meta {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.saved-delete {
+    width: 44px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 14px;
+    background: var(--soft);
+    color: var(--muted);
+    font-size: 20px;
+}
+
+.saved-delete:hover {
+    background: var(--red-soft);
+    color: var(--red);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 960px) {
     .game-container {
         flex-direction: column;
         align-items: center;
-        gap: 15px;
     }
-    
-    /* Mobile board container - prevent scrolling and make touch-friendly */
-    .board-wrapper {
-        width: 100vw;
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 15px;
-        position: relative;
-        touch-action: none; /* Prevent scroll on touch */
-        -webkit-user-select: none; /* Prevent text selection */
-        user-select: none;
-    }
-    
-    #board {
-        width: 100%;
-        max-width: 350px;
-        height: auto;
-        aspect-ratio: 1; /* Keep square ratio */
-        margin: 0 auto;
-    }
-    
-    /* Controls take full width on mobile and stack below board */
+
     .controls {
         width: 100%;
-        max-width: 400px;
-        min-width: unset;
-        order: 2; /* Ensure controls come after board */
-    }
-    
-    /* Optimize buttons for mobile touch */
-    .btn {
-        padding: 15px 20px;
-        font-size: 16px;
-        margin: 8px 5px;
-        min-height: 44px; /* iOS touch target size */
-    }
-    
-    .two-column-row {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .turn-indicator-compact {
-        justify-content: center;
-        padding: 12px;
-    }
-    
-    /* Mobile-friendly toggle switches */
-    .toggle-switch {
-        width: 70px;
-        height: 36px;
-    }
-    
-    .toggle-switch input {
-        height: 100%;
-        width: 100%;
-    }
-    
-    .slider:before {
-        height: 28px;
-        width: 28px;
-        left: 4px;
-        bottom: 4px;
-    }
-    
-    input:checked + .slider:before {
-        transform: translateX(34px);
-    }
-    
-    /* Info panel mobile adjustments */
-    .info-panel {
-        margin-top: 20px;
-        padding: 20px;
-    }
-    
-    .info-panel li {
-        font-size: 1em;
-    }
-    
-    /* Collapsible headers more touch-friendly */
-    .collapsible-header {
-        padding: 10px;
-        margin: 5px 0;
-    }
-    
-    .collapsible-header:hover {
-        padding: 10px;
-        background: rgba(0,0,0,0.05);
-    }
-    
-    /* Modal adjustments for mobile */
-    .modal-content {
-        margin: 30% auto;
-        width: 90%;
-        max-width: 300px;
-        padding: 25px;
-    }
-    
-    .color-btn {
-        padding: 25px;
-        min-width: 120px;
-    }
-    
-    .piece-icon {
-        font-size: 3em;
+        max-width: 532px;
     }
 }
 
-/* Extra small screens (phones in portrait) */
-@media (max-width: 480px) {
-    .container {
-        padding: 0;
-    }
-    
-    .board-wrapper {
-        max-width: 95vw;
+@media (max-width: 560px) {
+    body {
         padding: 10px;
     }
-    
+
+    header h1 {
+        font-size: 1.6em;
+    }
+
+    .board-wrapper {
+        width: 100%;
+        padding: 8px;
+        border-radius: 16px;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    #board {
+        width: 100%;
+    }
+
     .controls {
-        padding: 20px;
-    }
-    
-    .btn {
-        font-size: 14px;
-        padding: 12px 16px;
-    }
-    
-    .color-options {
-        gap: 15px;
-    }
-    
-    .color-btn {
-        min-width: 100px;
-        padding: 20px 15px;
+        padding: 16px;
     }
 }
+
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>גלאי איומים בשחמט</h1>
-            <p class="subtitle">למדו לזהות איומים ולהגן על הכלים שלכם!</p>
+            <h1 data-i18n="appTitle">על המשמר!</h1>
+            <p class="subtitle" data-i18n="subtitle">שחמט לילדים: למדו לזהות איומים ולהגן על הכלים שלכם</p>
+            <p class="dedication" data-i18n="dedication">מוקדש באהבה לאדם וילף ❤️</p>
         </header>
-        
+
         <div class="game-container">
             <div class="board-wrapper">
                 <div id="board"></div>
-                <div class="threat-overlay" id="threatOverlay"></div>
             </div>
-            
+
             <div class="controls">
-                <div class="control-section">
-                    <h3>בקרות משחק</h3>
-                    <button id="resetBtn" class="btn btn-primary">🔄 משחק חדש</button>
-                    <button id="undoBtn" class="btn btn-secondary">↩️ בטל מהלך</button>
-                    <button id="saveBtn" class="btn btn-secondary">💾 שמור משחק</button>
-                    <button id="loadBtn" class="btn btn-secondary">📁 טען משחק</button>
-                </div>
-                
-                <div class="control-section">
-                    <div class="two-column-row">
-                        <div class="column">
-                            <h3>תצוגת איומים</h3>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="showThreats">
-                                <span class="slider"></span>
-                            </label>
-                            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-                                הפעילו ואז לחצו על ריבוע לרמז. הרמז נסגר אוטומטית.
-                            </p>
-                        </div>
-                        
-                        <div class="column">
-                            <h3>מצב המשחק</h3>
-                            <div class="turn-indicator-compact">
-                                <span id="currentTurnIcon" class="turn-icon">♕</span>
-                                <span id="currentTurnText">תור הלבן</span>
-                            </div>
-                            <div class="status" id="gameStatus"></div>
-                        </div>
+                <div class="card-top">
+                    <div class="turn-chip" id="turnChip">
+                        <span class="turn-dot"></span>
+                        <span id="currentTurnText"></span>
+                    </div>
+                    <div class="lang-switch" role="group" aria-label="Language / שפה">
+                        <button type="button" class="lang-btn" data-lang="he" lang="he">עב</button>
+                        <button type="button" class="lang-btn" data-lang="en" lang="en">EN</button>
                     </div>
                 </div>
-                
-                <div class="control-section">
-                    <div class="collapsible-header" onclick="toggleDifficulty()">
-                        <h3>⚙️ רמת המחשב</h3>
-                        <span class="collapse-arrow" id="collapseArrow">▼</span>
-                    </div>
-                    <div class="difficulty-selector collapsed" id="difficultySelector">
-                        <label>
-                            <input type="radio" name="difficulty" value="easy" checked>
-                            🟢 קל - המחשב עושה מהלכים אקראיים
-                        </label>
-                        <label>
-                            <input type="radio" name="difficulty" value="medium">
-                            🟡 בינוני - המחשב מחפש מהלכים טובים
-                        </label>
-                        <label>
-                            <input type="radio" name="difficulty" value="hard">
-                            🔴 קשה - המחשב מנסה לנצח
-                        </label>
-                    </div>
+
+                <div class="toolbar">
+                    <button id="resetBtn" class="tool-btn tool-primary">
+                        <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span>
+                        <span data-i18n="newGame">משחק חדש</span>
+                    </button>
+                    <button id="undoBtn" class="tool-btn">
+                        <span class="tool-icon"><svg class="icon-undo" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span>
+                        <span data-i18n="undo">חזרה</span>
+                    </button>
+                    <button id="saveBtn" class="tool-btn">
+                        <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>
+                        <span data-i18n="save">שמירה</span>
+                    </button>
+                    <button id="loadBtn" class="tool-btn">
+                        <span class="tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+                        <span data-i18n="load">טעינה</span>
+                    </button>
                 </div>
-                
-                <div class="control-section">
-                    <h3>כלים שנלכדו</h3>
-                    <div class="captured-pieces">
-                        <div id="whiteCaptured" class="captured-row"></div>
-                        <div id="blackCaptured" class="captured-row"></div>
+
+                <div class="hint-row">
+                    <button type="button" id="showThreats" class="hint-btn hint-threats" aria-pressed="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                        <span data-i18n="whoThreatens">מי מאיים?</span>
+                        <span class="hint-count" id="hintCount" hidden></span>
+                    </button>
+                    <button type="button" class="help-btn" data-i18n-aria="explain" aria-label="הסבר" aria-expanded="false" aria-controls="hintInfo">?</button>
+                </div>
+                <p id="hintInfo" class="help-text" hidden></p>
+
+                <div class="hint-row">
+                    <button type="button" id="showDanger" class="hint-btn hint-danger">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 20h18z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
+                        <span data-i18n="myPiecesInDanger">הכלים שלי בסכנה</span>
+                    </button>
+                    <button type="button" class="help-btn" data-i18n-aria="explain" aria-label="הסבר" aria-expanded="false" aria-controls="dangerInfo">?</button>
+                </div>
+                <p id="dangerInfo" class="help-text" data-i18n="dangerInfo" hidden></p>
+
+                <div class="section">
+                    <div class="section-label" id="levelLabel" data-i18n="level">רמה</div>
+                    <div class="segmented" role="radiogroup" aria-labelledby="levelLabel">
+                        <label><input type="radio" name="difficulty" value="beginner" checked><span data-i18n="level_beginner">מתחיל</span></label>
+                        <label><input type="radio" name="difficulty" value="attacker"><span data-i18n="level_attacker">תוקף</span></label>
+                        <label><input type="radio" name="difficulty" value="medium"><span data-i18n="level_medium">בינוני</span></label>
+                        <label><input type="radio" name="difficulty" value="hard"><span data-i18n="level_hard">קשה</span></label>
+                    </div>
+                    <p class="level-caption" id="levelCaption"></p>
+                    <div class="setting-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="limitHints">
+                            <span class="slider"></span>
+                        </label>
+                        <label for="limitHints" class="toggle-caption" data-i18n="limitHints">הגבלת רמזים לפי רמה</label>
+                        <button type="button" class="help-btn" data-i18n-aria="explain" aria-label="הסבר" aria-expanded="false" aria-controls="limitInfo">?</button>
+                    </div>
+                    <p id="limitInfo" class="help-text" data-i18n="limitInfo" hidden></p>
+                </div>
+
+                <div class="section">
+                    <div class="section-label" data-i18n="captured">נאכלו</div>
+                    <div class="captured-row">
+                        <span data-i18n="youCaptured">אכלתם</span>
+                        <span class="captured-pieces" id="youCaptured"></span>
+                    </div>
+                    <div class="captured-row">
+                        <span data-i18n="computerCaptured">המחשב אכל</span>
+                        <span class="captured-pieces" id="computerCaptured"></span>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="info-panel">
-            <div class="collapsible-header" onclick="toggleInstructions()">
-                <h3>🎓 איך להשתמש</h3>
-                <span class="collapse-arrow" id="instructionsArrow">▼</span>
-            </div>
-            <div class="instructions-content collapsed" id="instructionsContent">
-                <ul>
-                    <li>🔴 לחצו על כל ריבוע כדי לראות איזה כלים מאיימים עליו</li>
-                    <li>📍 ככל שיותר כלים מאיימים, הגבול האדום יהיה עבה יותר</li>
-                    <li>🎯 הריבוע שנבחר מסומן בכחול</li>
-                    <li>♟️ גררו כלים כדי לבצע מהלכים</li>
-                    <li>🤖 בחרו צבע ושחקו נגד המחשב</li>
-                    <li>⚙️ בחרו רמת קושי: קל, בינוני או קשה</li>
-                </ul>
-            </div>
-        </div>
+
+        <details class="info-panel">
+            <summary data-i18n="howTo">איך משחקים?</summary>
+            <ul>
+                <li data-i18n="howTo1"></li>
+                <li data-i18n="howTo2"></li>
+                <li data-i18n="howTo3"></li>
+                <li data-i18n="howTo4"></li>
+                <li data-i18n="howTo5"></li>
+                <li data-i18n="howTo6"></li>
+            </ul>
+        </details>
     </div>
-    
+
     <!-- Color Selection Modal -->
     <div id="colorModal" class="modal">
         <div class="modal-content">
-            <h3>בחרו צבע לשחק</h3>
+            <h3 data-i18n="pickColor">באיזה צבע תשחקו?</h3>
             <div class="color-options">
-                <button id="playWhite" class="color-btn white-btn">
+                <button id="playWhite" class="color-btn">
                     <span class="piece-icon">♔</span>
-                    <span>לבן</span>
+                    <span data-i18n="white">לבן</span>
                 </button>
-                <button id="playBlack" class="color-btn black-btn">
+                <button id="playBlack" class="color-btn">
                     <span class="piece-icon">♚</span>
-                    <span>שחור</span>
+                    <span data-i18n="black">שחור</span>
                 </button>
             </div>
         </div>
     </div>
-    
-    <!-- jQuery (required by chessboard.js) -->
+
+    <!-- Save with a name -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <h3 data-i18n="saveTitle">שמירת משחק</h3>
+            <form id="saveForm">
+                <label for="saveName" class="field-label" data-i18n="saveNameLabel">שם למשחק</label>
+                <input id="saveName" class="text-field" type="text" maxlength="40" autocomplete="off">
+                <div class="modal-actions">
+                    <button type="submit" class="pill-btn pill-primary" data-i18n="save">שמירה</button>
+                    <button type="button" class="pill-btn modal-close" data-i18n="cancel">ביטול</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pick a saved game -->
+    <div id="loadModal" class="modal">
+        <div class="modal-content">
+            <h3 data-i18n="loadTitle">טעינת משחק</h3>
+            <p class="modal-note" data-i18n="loadNote">המשחק הנוכחי יוחלף במשחק שתבחרו.</p>
+            <ul id="savedList" class="saved-list"></ul>
+            <p id="noSaves" class="modal-note" data-i18n="noSavedGames" hidden></p>
+            <div class="modal-actions">
+                <button type="button" class="pill-btn modal-close" data-i18n="cancel">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="endModal" class="modal">
+        <div class="modal-content">
+            <h3 id="endText"></h3>
+            <div class="modal-actions">
+                <button type="button" id="endNewGame" class="pill-btn pill-primary" data-i18n="newGame">משחק חדש</button>
+                <button type="button" class="pill-btn modal-close" data-i18n="lookAtBoard">להסתכל על הלוח</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Short messages float over the page instead of pushing the layout -->
+    <div id="gameStatus" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- Blunder warning (Beginner/Attacker levels) -->
+    <div id="warnModal" class="modal">
+        <div class="modal-content">
+            <h3 data-i18n="warnTitle">רגע, בדקו!</h3>
+            <p id="warnText"></p>
+            <div class="modal-actions">
+                <button id="warnUndo" class="pill-btn pill-primary" data-i18n="warnUndo">אחזיר את המהלך</button>
+                <button id="warnKeep" class="pill-btn" data-i18n="warnKeep">זה המהלך שלי</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- Chess.js for game logic -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    
-    <!-- Chessboard.js for board UI -->
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    
-    <!-- Our custom chess logic -->
     <script>
         // Initialize chess game and board
 let game = new Chess();
@@ -774,13 +958,198 @@ let board = null;
 let $board = $('#board');
 let showThreats = false; // Start with threats off
 let debugMode = false; // Set to true to see debug info
-let moveHistory = [];
 let gameMode = 'computer'; // Always play against computer
-let difficulty = 'easy'; // 'easy', 'medium', 'hard'
+let difficulty = 'beginner'; // key of LEVELS
 let isComputerTurn = false;
+let hintsUsed = 0; // detector uses this game (threats + danger), counted against the level's limit
+let limitHints = false; // off: unlimited hints on every level; on: LEVELS[...].hintLimit applies
+try { limitHints = localStorage.getItem('limitHints') === '1'; } catch (e) {}
+
+// What each level teaches. depth: search depth (none = teaching moves);
+// blunder: chance the computer leaves one of its pieces hanging on purpose;
+// autoHints: mark the child's hanging pieces automatically; warnBlunders: ask before a move that hangs a piece
+const LEVELS = {
+    beginner: { blunder: 0.3,  autoHints: true,  hintLimit: Infinity, warnBlunders: true },
+    attacker: { blunder: 0.15, autoHints: false, hintLimit: Infinity, warnBlunders: true },
+    medium:   { depth: 2, blunder: 0, autoHints: false, hintLimit: 3, warnBlunders: false },
+    hard:     { depth: 3, blunder: 0, autoHints: false, hintLimit: 0, warnBlunders: false }
+};
+const PIECE_VALUES = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
+
+// Every piece of UI text, per language. Markup uses data-i18n="key"; code uses t('key', {vars})
+const STRINGS = {
+    he: {
+        pageTitle: 'על המשמר! שחמט לילדים',
+        appTitle: 'על המשמר!',
+        subtitle: 'שחמט לילדים: למדו לזהות איומים ולהגן על הכלים שלכם',
+        dedication: 'מוקדש באהבה לאדם וילף ❤️',
+        yourTurn: 'התור שלכם!',
+        computerThinking: 'המחשב חושב…',
+        newGame: 'משחק חדש',
+        undo: 'חזרה',
+        save: 'שמירה',
+        load: 'טעינה',
+        whoThreatens: 'מי מאיים?',
+        myPiecesInDanger: 'הכלים שלי בסכנה',
+        explain: 'הסבר',
+        dangerInfo: 'לחצו כדי לסמן לרגע באדום את כל הכלים שלכם שמאוימים עכשיו.',
+        level: 'רמה',
+        level_beginner: 'מתחיל',
+        level_attacker: 'תוקף',
+        level_medium: 'בינוני',
+        level_hard: 'קשה',
+        caption_beginner: 'המחשב אוכל כלים שנשארו בלי הגנה. כלים שלכם בסכנה מסומנים, והמחשב מזהיר לפני טעות.',
+        caption_attacker: 'המחשב מחפש לתקוף את הכלים שלכם, ומזהיר לפני טעות.',
+        caption_medium: 'המחשב חושב מהלך קדימה ולא נותן כלים בחינם.',
+        caption_hard: 'המחשב חושב שני מהלכים קדימה ומחפש מזלגות.',
+        limitHints: 'הגבלת רמזים לפי רמה',
+        limitInfo: 'כשמופעל, מספר הרמזים במשחק תלוי ברמה: מתחיל ותוקף - בלי הגבלה, בינוני - 3, קשה - בלי רמזים. כל לחיצה על "מי מאיים?" או "הכלים שלי בסכנה" נספרת כרמז. כשכבוי - רמזים בלי הגבלה בכל הרמות.',
+        captured: 'נאכלו',
+        youCaptured: 'אכלתם',
+        computerCaptured: 'המחשב אכל',
+        howTo: 'איך משחקים?',
+        howTo1: 'לחצו "משחק חדש" כדי לבחור צבע ולהתחיל.',
+        howTo2: 'גררו כלי, או לחצו על כלי ואז על הריבוע שאליו הוא זז.',
+        howTo3: 'לחצו "מי מאיים?" ואז על ריבוע כדי לראות אילו כלים מאיימים עליו. ככל שיותר כלים מאיימים, המסגרת האדומה עבה יותר.',
+        howTo4: 'לחצו "הכלים שלי בסכנה" כדי לראות לרגע את כל הכלים שלכם שמאוימים.',
+        howTo5: 'כשהמלך שלכם בשח הוא מסומן באדום. לחצו "מי מאיים?" ואז על המלך כדי לראות מי נותן שח.',
+        howTo6: 'ברמות מתחיל ותוקף המחשב מזהיר לפני שאתם משאירים כלי בלי הגנה.',
+        pickColor: 'באיזה צבע תשחקו?',
+        white: 'לבן',
+        black: 'שחור',
+        warnTitle: 'רגע, בדקו!',
+        warnUndo: 'אחזיר את המהלך',
+        warnKeep: 'זה המהלך שלי',
+        warnText: 'אחרי המהלך הזה המחשב יכול לאכול את {pieces}. להמשיך?',
+        pieceRef: 'ה{piece} ({sq})',
+        pieces: { p: 'חייל', n: 'סוס', b: 'רץ', r: 'צריח', q: 'מלכה', k: 'מלך' },
+        youWin: 'מט! ניצחתם! 🎉',
+        computerWins: 'מט. המחשב ניצח הפעם - נסו שוב!',
+        stalemate: 'פט - תיקו! 🤝 אין מהלך חוקי, אבל המלך לא בשח.',
+        insufficient: 'תיקו! 🤝 לא נשארו מספיק כלים כדי לתת מט.',
+        youInCheck: 'שח! המלך שלכם מאוים ⚠️',
+        computerInCheck: 'שח למחשב! 👏',
+        noDanger: 'אף כלי שלכם לא מאוים כרגע 👍',
+        hintInfoUnlimited: 'לחצו "מי מאיים?" ואז על ריבוע כדי לראות מי מאיים עליו. הרמז נסגר אוטומטית.',
+        hintInfoNone: 'ברמה קשה אין רמזים - בדקו לבד! 💪',
+        hintInfoLeft: 'נשארו {n} רמזים במשחק הזה. לחצו "מי מאיים?" ואז על ריבוע.',
+        hintInfoOut: 'נגמרו הרמזים למשחק הזה 💪',
+        hintInfoBeginner: ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.',
+        hintsLeft: 'נשארו {n}',
+        noGameToSave: 'אין עדיין משחק לשמירה - התחילו משחק חדש!',
+        saveTitle: 'שמירת משחק',
+        saveNameLabel: 'שם למשחק',
+        defaultSaveName: 'משחק של {n} מהלכים',
+        cancel: 'ביטול',
+        saved: 'המשחק "{name}" נשמר!',
+        saveFailed: 'לא הצלחנו לשמור את המשחק בדפדפן הזה.',
+        loadTitle: 'טעינת משחק',
+        loadNote: 'המשחק הנוכחי יוחלף במשחק שתבחרו.',
+        noSavedGames: 'אין עדיין משחקים שמורים.',
+        deleteSave: 'מחיקת "{name}"',
+        loaded: 'המשחק "{name}" נטען!',
+        loadError: 'לא הצלחנו לטעון את המשחק. ייתכן שהשמירה פגומה.',
+        lookAtBoard: 'להסתכל על הלוח'
+    },
+    en: {
+        pageTitle: 'On Guard! Chess for Kids',
+        appTitle: 'On Guard!',
+        subtitle: 'Chess for kids: learn to spot threats and protect your pieces',
+        dedication: 'Dedicated with love to Adam Wilf ❤️',
+        yourTurn: 'Your turn!',
+        computerThinking: 'Computer is thinking…',
+        newGame: 'New game',
+        undo: 'Undo',
+        save: 'Save',
+        load: 'Load',
+        whoThreatens: "Who's attacking?",
+        myPiecesInDanger: 'My pieces in danger',
+        explain: 'Explain',
+        dangerInfo: 'Tap to briefly mark in red every one of your pieces that is under attack right now.',
+        level: 'Level',
+        level_beginner: 'Beginner',
+        level_attacker: 'Attacker',
+        level_medium: 'Medium',
+        level_hard: 'Hard',
+        caption_beginner: 'The computer takes pieces you leave unprotected. Your pieces in danger are marked, and it warns you before a mistake.',
+        caption_attacker: 'The computer looks for ways to attack your pieces, and warns you before a mistake.',
+        caption_medium: 'The computer thinks one move ahead and never gives pieces away.',
+        caption_hard: 'The computer thinks two moves ahead and looks for forks.',
+        limitHints: 'Limit hints by level',
+        limitInfo: 'When on, the number of hints per game depends on the level: Beginner and Attacker - unlimited, Medium - 3, Hard - none. Every tap on "Who\'s attacking?" or "My pieces in danger" counts as a hint. When off, hints are unlimited on every level.',
+        captured: 'Captured',
+        youCaptured: 'You captured',
+        computerCaptured: 'Computer captured',
+        howTo: 'How to play',
+        howTo1: 'Tap "New game" to pick a color and start.',
+        howTo2: 'Drag a piece, or tap a piece and then the square it should move to.',
+        howTo3: 'Tap "Who\'s attacking?" and then a square to see which pieces attack it. The more attackers, the thicker the red frame.',
+        howTo4: 'Tap "My pieces in danger" to briefly see all of your pieces that are under attack.',
+        howTo5: 'When your king is in check it is marked in red. Tap "Who\'s attacking?" and then the king to see who gives check.',
+        howTo6: 'On Beginner and Attacker the computer warns you before you leave a piece unprotected.',
+        pickColor: 'Which color do you want to play?',
+        white: 'White',
+        black: 'Black',
+        warnTitle: 'Wait, check this!',
+        warnUndo: 'Take it back',
+        warnKeep: 'Keep my move',
+        warnText: 'After this move the computer can capture {pieces}. Continue?',
+        pieceRef: 'your {piece} ({sq})',
+        pieces: { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' },
+        youWin: 'Checkmate! You win! 🎉',
+        computerWins: 'Checkmate. The computer won this time - try again!',
+        stalemate: 'Stalemate - a draw! 🤝 No legal move, but the king is not in check.',
+        insufficient: 'A draw! 🤝 Not enough pieces left to checkmate.',
+        youInCheck: 'Check! Your king is under attack ⚠️',
+        computerInCheck: 'Check on the computer! 👏',
+        noDanger: 'None of your pieces is under attack right now 👍',
+        hintInfoUnlimited: 'Tap "Who\'s attacking?" and then a square to see what attacks it. The hint turns off by itself.',
+        hintInfoNone: 'No hints on Hard - check for yourself! 💪',
+        hintInfoLeft: '{n} hints left this game. Tap "Who\'s attacking?" and then a square.',
+        hintInfoOut: 'No hints left this game 💪',
+        hintInfoBeginner: ' On Beginner, your pieces in danger are marked in red.',
+        hintsLeft: '{n} left',
+        noGameToSave: 'Nothing to save yet - start a new game first!',
+        saveTitle: 'Save game',
+        saveNameLabel: 'Name this game',
+        defaultSaveName: 'Game of {n} moves',
+        cancel: 'Cancel',
+        saved: 'Saved "{name}"!',
+        saveFailed: 'Could not save the game in this browser.',
+        loadTitle: 'Load a game',
+        loadNote: 'The current game will be replaced by the one you pick.',
+        noSavedGames: 'No saved games yet.',
+        deleteSave: 'Delete "{name}"',
+        loaded: 'Loaded "{name}"!',
+        loadError: 'Could not load the game. The save may be damaged.',
+        lookAtBoard: 'Look at the board'
+    }
+};
+let lang = 'he';
+try { if (STRINGS[localStorage.getItem('lang')]) lang = localStorage.getItem('lang'); } catch (e) {}
+
+function t(key, vars = {}) {
+    return String(STRINGS[lang][key] ?? key).replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
+}
+
+// Switch every text on the page, plus direction (RTL for Hebrew)
+function applyLanguage(newLang) {
+    lang = STRINGS[newLang] ? newLang : 'he';
+    try { localStorage.setItem('lang', lang); } catch (e) {}
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+    document.title = t('pageTitle');
+    $('[data-i18n]').each(function() { this.textContent = t(this.dataset.i18n); });
+    $('[data-i18n-aria]').each(function() { this.setAttribute('aria-label', t(this.dataset.i18nAria)); });
+    $('.lang-btn').each(function() { this.setAttribute('aria-pressed', String(this.dataset.lang === lang)); });
+    updateStatus();
+    updateCapturedPieces();
+    updateHintInfo();
+}
 let selectedSquare = null; // For tap-to-see-threats feature
 let showingSquareThreats = false;
 let playerColor = 'white'; // Player's color choice
+let moveFrom = null; // Tap-to-move: selected source square
 
 // Configuration for chessboard
 const config = {
@@ -795,38 +1164,77 @@ const config = {
 // Initialize the board
 $(document).ready(function() {
     board = Chessboard('board', config);
-    updateStatus();
+    $(window).on('resize', () => {
+        board.resize();
+        clearSquareThreats();
+        showAutoHints();
+    });
     
-    // Add click handlers to board squares for tap-to-see-threats
-    setTimeout(() => {
-        addSquareClickHandlers();
-    }, 1000);
+    // One delegated handler survives every board redraw (tap-to-move and tap-to-see-threats)
+    $board.on('click', '[data-square]', function() {
+        onSquareClick($(this).attr('data-square'));
+    });
     
     // Event listeners
     $('#resetBtn').on('click', showColorSelectionModal);
     $('#undoBtn').on('click', undoMove);
     $('#saveBtn').on('click', saveGame);
     $('#loadBtn').on('click', loadGame);
-    $('#showThreats').on('change', function() {
-        showThreats = this.checked;
+    $('#showThreats').on('click', function() {
+        setThreatMode(!showThreats);
         if (!showThreats) {
             clearSquareThreats();
+            showAutoHints();
         }
     });
     $('input[name="difficulty"]').on('change', function() {
         difficulty = this.value;
+        clearSquareThreats();
+        showAutoHints();
+        updateHintInfo();
     });
-    
+    $('#showDanger').on('click', flashDangerPieces);
+    $('#limitHints').prop('checked', limitHints).on('change', function() {
+        limitHints = this.checked;
+        try { localStorage.setItem('limitHints', limitHints ? '1' : '0'); } catch (e) {}
+        updateHintInfo();
+    });
+    $('.lang-btn').on('click', function() { applyLanguage(this.dataset.lang); });
+    applyLanguage(lang);
+    // Every "?" button shows/hides the explanation it points to
+    $('.help-btn').on('click', function() {
+        const $info = $('#' + $(this).attr('aria-controls'));
+        const show = $info.prop('hidden');
+        $info.prop('hidden', !show);
+        $(this).attr('aria-expanded', show);
+    });
+
     // Modal event listeners
     $('#playWhite').on('click', () => startNewGame('white'));
     $('#playBlack').on('click', () => startNewGame('black'));
+    $('#saveForm').on('submit', confirmSave);
+    $('#endNewGame').on('click', () => { $('#endModal').hide(); showColorSelectionModal(); });
+    $('.modal-close').on('click', function() { $(this).closest('.modal').hide(); });
+    // Tapping outside a dialog closes it, except the blunder warning, which needs an answer
+    $('.modal').not('#warnModal').on('click', function(e) { if (e.target === this) $(this).hide(); });
+    $('#warnKeep').on('click', keepWarnedMove);
+    $('#warnUndo').on('click', takeBackWarnedMove);
 });
+
+// "Who's attacking?" is armed until the next square tap
+function setThreatMode(on) {
+    showThreats = on;
+    $('#showThreats').attr('aria-pressed', String(on));
+}
 
 // Check if a piece can be dragged
 function onDragStart(source, piece, position, orientation) {
     // Don't allow moves if game is over
-    if (game.game_over()) return false;
-    
+    if (isGameOver()) return false;
+
+    // Threat detector is armed: a tap on a piece should show its threats, so don't start a drag
+    if (showThreats) return false;
+
     // Don't allow moves during computer's turn
     if (isComputerTurn) return false;
     
@@ -843,119 +1251,148 @@ function onDragStart(source, piece, position, orientation) {
     }
 }
 
-// Handle piece drop
+// Handle piece drop (a tap on own piece arrives here as source === target)
 function onDrop(source, target) {
-    // Save current position for undo
-    moveHistory.push(game.fen());
-    
+    if (source === target) {
+        $('.square-highlight.selected-square').remove(); // keep hint/check marks visible
+        moveFrom = source;
+        addSquareHighlight(source, 'selected-square', 0);
+        return 'snapback';
+    }
+    if (!tryMove(source, target)) return 'snapback';
+}
+
+// Make the player's move; returns false if illegal
+function tryMove(source, target) {
+    const me = game.turn();
+
     // Try to make the move
     let move = game.move({
         from: source,
         to: target,
         promotion: 'q' // Always promote to queen for simplicity
     });
-    
-    // If illegal move, snap back
+
     if (move === null) {
-        moveHistory.pop();
-        return 'snapback';
+        return false;
     }
-    
+
     updateStatus();
     updateCapturedPieces();
-    
+
     // Clear any threat displays after a move
     clearSquareThreats();
-    
+
+    // Lower levels: ask before a move that leaves a piece to be captured (an even-or-better trade doesn't count)
+    if (LEVELS[difficulty].warnBlunders && !isGameOver()) {
+        const tradedFairly = move.captured && PIECE_VALUES[move.captured] >= PIECE_VALUES[move.piece];
+        const hanging = hangingPieces(me).filter(sq => !(tradedFairly && sq === move.to));
+        if (hanging.length) {
+            showBlunderWarning(hanging);
+            return true;
+        }
+    }
+
+    afterPlayerMove();
+    return true;
+}
+
+function afterPlayerMove() {
     // If it's computer's turn, make computer move
     const computerColor = playerColor === 'white' ? 'b' : 'w';
-    if (gameMode === 'computer' && game.turn() === computerColor && !game.game_over()) {
+    if (gameMode === 'computer' && game.turn() === computerColor && !isGameOver()) {
         setTimeout(makeComputerMove, 500); // Small delay for better UX
     }
+}
+
+function showBlunderWarning(squares) {
+    const enemy = game.turn();
+    const names = squares.map(sq => t('pieceRef', { piece: getPieceText(game.get(sq).type), sq })).join(', ');
+    $('#warnText').text(t('warnText', { pieces: names }));
+    squares.forEach(sq => addSquareHighlight(sq, 'threatened-square', attackersOf(sq, enemy).length));
+    isComputerTurn = true; // block moves until the child decides
+    $('#warnModal').show();
+}
+
+function keepWarnedMove() {
+    $('#warnModal').hide();
+    isComputerTurn = false;
+    clearSquareThreats();
+    afterPlayerMove();
+}
+
+function takeBackWarnedMove() {
+    $('#warnModal').hide();
+    isComputerTurn = false;
+    game.undo();
+    board.position(game.fen());
+    clearSquareThreats();
+    updateStatus();
+    updateCapturedPieces();
+    showAutoHints();
 }
 
 // Update board position after the piece snap
 function onSnapEnd() {
     board.position(game.fen());
-    // Re-add click handlers after board update
-    setTimeout(() => addSquareClickHandlers(), 100);
-}
-
-// Reset the game
-function resetGame() {
-    game.reset();
-    board.start();
-    moveHistory = [];
-    clearSquareThreats();
-    
-    // Turn off threat toggle on new game
-    showThreats = false;
-    $('#showThreats').prop('checked', false);
-    
-    updateStatus();
-    updateCapturedPieces();
-    // Re-add click handlers after board reset
-    setTimeout(() => addSquareClickHandlers(), 100);
 }
 
 // Undo last move
+// Take back the child's last move and the computer's reply. Uses game.undo() so the move
+// history (and with it the captured-pieces list) stays intact
 function undoMove() {
-    if (moveHistory.length > 0) {
-        game.load(moveHistory.pop());
-        board.position(game.fen());
-        clearSquareThreats();
-        updateStatus();
-        updateCapturedPieces();
-        // Re-add click handlers after board update
-        setTimeout(() => addSquareClickHandlers(), 100);
-    }
+    const me = playerColor === 'white' ? 'w' : 'b';
+    if (isComputerTurn || !game.history({ verbose: true }).some(m => m.color === me)) return;
+    while (game.undo().color !== me) {}
+    board.position(game.fen());
+    clearSquareThreats();
+    updateStatus();
+    updateCapturedPieces();
+    showAutoHints();
 }
 
-// Update game status display
+// Games end only when nobody can win. Repetition and the 50-move rule are left out on purpose:
+// in real chess a player has to claim them, and for kids they cut games short that are still being played
+function isGameOver() {
+    return game.in_checkmate() || game.in_stalemate() || game.insufficient_material();
+}
+
+// Short message floating over the page, gone after a few seconds
+let toastTimer = null;
+function showToast(text, good = false) {
+    clearTimeout(toastTimer);
+    $('#gameStatus').text(text).toggleClass('good', good).addClass('show');
+    toastTimer = setTimeout(() => $('#gameStatus').removeClass('show'), 3000);
+}
+
+// Turn chip, plus a message (and a game-over dialog) when the game state changes
+let lastStatus = '';
 function updateStatus() {
+    const myTurn = game.turn() === (playerColor === 'white' ? 'w' : 'b');
+    $('#currentTurnText').text(myTurn ? t('yourTurn') : t('computerThinking'));
+    $('#turnChip').toggleClass('waiting', !myTurn && !isGameOver());
+
     let status = '';
-    let moveColor = game.turn() === 'w' ? 'לבן' : 'שחור';
-    let isWhiteTurn = game.turn() === 'w';
-    
-    // Update turn icon and text
-    $('#currentTurnIcon').html(isWhiteTurn ? '♕' : '♛'); // White queen vs Black queen
-    $('#currentTurnIcon').css('color', isWhiteTurn ? '#fff' : '#000');
-    $('#currentTurnIcon').css('text-shadow', isWhiteTurn ? '1px 1px 2px #000' : '1px 1px 2px #fff');
-    $('#currentTurnText').html('תור ה' + moveColor);
-    
-    // Checkmate
-    if (game.in_checkmate()) {
-        status = 'המשחק נגמר! ' + (game.turn() === 'w' ? 'שחור' : 'לבן') + ' ניצח! 🎉';
+    if (game.in_checkmate()) status = myTurn ? 'computerWins' : 'youWin';
+    else if (game.in_stalemate()) status = 'stalemate';
+    else if (game.insufficient_material()) status = 'insufficient';
+    else if (game.in_check()) status = myTurn ? 'youInCheck' : 'computerInCheck';
+    if (status && status !== lastStatus) {
+        showToast(t(status), status === 'youWin' || status === 'computerInCheck');
+        if (isGameOver()) {
+            $('#endText').text(t(status));
+            $('#endModal').show();
+        }
     }
-    // Draw
-    else if (game.in_draw()) {
-        status = 'המשחק נגמר - תיקו! 🤝';
-    }
-    // Check
-    else if (game.in_check()) {
-        status = '⚠️ ' + moveColor + ' בשח!';
-    }
-    // Game still on
-    else {
-        status = '';
-    }
-    
-    $('#gameStatus').html(status);
+    lastStatus = status;
 }
 
-// Removed old threat visualization functions - now using tap-to-see-threats only
-
-// Update captured pieces display
+// Captured pieces, from the child's point of view
 function updateCapturedPieces() {
     const captured = getCapturedPieces();
-    
-    // Display captured white pieces (with white symbols)
-    const whiteSymbols = captured.white.map(p => getPieceSymbol(p, 'white')).join(' ');
-    $('#whiteCaptured').html(whiteSymbols ? 'לבן שנלכד: ' + whiteSymbols : '');
-    
-    // Display captured black pieces (with black symbols)
-    const blackSymbols = captured.black.map(p => getPieceSymbol(p, 'black')).join(' ');
-    $('#blackCaptured').html(blackSymbols ? 'שחור שנלכד: ' + blackSymbols : '');
+    const mine = playerColor, theirs = playerColor === 'white' ? 'black' : 'white';
+    $('#youCaptured').text(captured[theirs].map(p => getPieceSymbol(p, theirs)).join(''));
+    $('#computerCaptured').text(captured[mine].map(p => getPieceSymbol(p, mine)).join(''));
 }
 
 // Get lists of captured pieces
@@ -1003,7 +1440,7 @@ function getPieceSymbol(piece, color) {
 // Computer AI Functions
 function makeComputerMove() {
     const computerColor = playerColor === 'white' ? 'b' : 'w';
-    if (game.game_over() || game.turn() !== computerColor) return;
+    if (isGameOver() || game.turn() !== computerColor) return;
     
     isComputerTurn = true;
     const moves = game.moves({ verbose: true });
@@ -1013,21 +1450,8 @@ function makeComputerMove() {
         return;
     }
     
-    let selectedMove;
-    
-    switch (difficulty) {
-        case 'easy':
-            selectedMove = getRandomMove(moves);
-            break;
-        case 'medium':
-            selectedMove = getMediumMove(moves);
-            break;
-        case 'hard':
-            selectedMove = getHardMove(moves);
-            break;
-        default:
-            selectedMove = getRandomMove(moves);
-    }
+    const level = LEVELS[difficulty];
+    const selectedMove = level.depth ? getSearchMove(moves, level.depth) : getTeachingMove(moves, level);
     
     // Make the move
     if (selectedMove) {
@@ -1036,125 +1460,120 @@ function makeComputerMove() {
         
         updateStatus();
         updateCapturedPieces();
-        // Re-add click handlers after board update
-        setTimeout(() => addSquareClickHandlers(), 100);
+        clearSquareThreats();
+        showAutoHints();
     }
     
     isComputerTurn = false;
 }
 
-// Easy: Random move
-function getRandomMove(moves) {
-    return moves[Math.floor(Math.random() * moves.length)];
+function randomOf(items) {
+    return items[Math.floor(Math.random() * items.length)];
 }
 
-// Medium: Prefer captures and checks
-function getMediumMove(moves) {
-    // First priority: captures
-    const captures = moves.filter(move => move.captured);
-    if (captures.length > 0) {
-        return captures[Math.floor(Math.random() * captures.length)];
+// Beginner/Attacker: punish pieces the child left hanging, sometimes leave one of ours hanging on purpose,
+// otherwise Beginner plays randomly and Attacker picks the move that creates the biggest threat
+function getTeachingMove(moves, level) {
+    const me = game.turn();
+    const you = me === 'w' ? 'b' : 'w';
+    
+    // Free material: an undefended piece, or one worth more than the piece taking it
+    const grabs = moves.filter(m => m.captured &&
+        (!attackersOf(m.to, you).length || PIECE_VALUES[m.piece] < PIECE_VALUES[m.captured]));
+    if (grabs.length) {
+        const best = Math.max(...grabs.map(m => PIECE_VALUES[m.captured]));
+        return randomOf(grabs.filter(m => PIECE_VALUES[m.captured] === best));
     }
     
-    // Second priority: checks
-    const checks = moves.filter(move => {
+    const scored = moves.map(move => {
         game.move(move);
-        const inCheck = game.in_check();
+        const score = { move, threat: hangingValue(you), gift: hangingValue(me) };
         game.undo();
-        return inCheck;
+        return score;
     });
-    if (checks.length > 0) {
-        return checks[Math.floor(Math.random() * checks.length)];
+    const giftNow = hangingValue(me);
+    
+    // Deliberate mistake: give the child something to capture
+    if (Math.random() < level.blunder) {
+        const gifts = scored.filter(s => s.gift > giftNow);
+        if (gifts.length) return randomOf(gifts).move;
     }
     
-    // Otherwise random
-    return getRandomMove(moves);
+    if (difficulty === 'beginner') return randomOf(moves);
+    
+    const scoreOf = s => s.threat - s.gift;
+    const best = Math.max(...scored.map(scoreOf));
+    return randomOf(scored.filter(s => scoreOf(s) === best)).move;
 }
 
-// Hard: Try to find best moves (simple evaluation)
-function getHardMove(moves) {
+// Medium/Hard: pick randomly among the best moves found by a material search `depth` plies deep
+function getSearchMove(moves, depth) {
     let bestMoves = [];
     let bestScore = -Infinity;
-    
     moves.forEach(move => {
         game.move(move);
-        let score = evaluatePosition();
-        
+        const score = -negamax(depth - 1, -Infinity, Infinity);
+        game.undo();
         if (score > bestScore) {
             bestScore = score;
             bestMoves = [move];
         } else if (score === bestScore) {
             bestMoves.push(move);
         }
-        
-        game.undo();
     });
-    
     return bestMoves[Math.floor(Math.random() * bestMoves.length)];
 }
 
-// Simple position evaluation
-function evaluatePosition() {
-    const pieceValues = {
-        'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0
-    };
-    
+// Alpha-beta search; score is from the side to move's point of view
+function negamax(depth, alpha, beta) {
+    if (depth === 0) return materialScore(game.turn());
+    const moves = game.moves({ verbose: true });
+    if (moves.length === 0) return game.in_check() ? -10000 - depth : 0; // mate sooner is worse; stalemate is 0
+    moves.sort((a, b) => (b.captured ? 1 : 0) - (a.captured ? 1 : 0)); // captures first prunes more
+    for (const move of moves) {
+        game.move(move);
+        const score = -negamax(depth - 1, -beta, -alpha);
+        game.undo();
+        if (score >= beta) return score;
+        if (score > alpha) alpha = score;
+    }
+    return alpha;
+}
+
+function materialScore(color) {
     let score = 0;
-    const boardArray = game.board();
-    
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const piece = boardArray[row][col];
-            if (piece) {
-                const value = pieceValues[piece.type] || 0;
-                if (piece.color === 'b') {
-                    score += value;
-                } else {
-                    score -= value;
-                }
-            }
-        }
-    }
-    
-    // Bonus for checkmate
-    if (game.in_checkmate()) {
-        score += game.turn() === 'w' ? 1000 : -1000;
-    }
-    
-    // Bonus for check
-    if (game.in_check()) {
-        score += game.turn() === 'w' ? -10 : 10;
-    }
-    
+    game.board().forEach(row => row.forEach(piece => {
+        if (piece) score += piece.color === color ? PIECE_VALUES[piece.type] : -PIECE_VALUES[piece.type];
+    }));
     return score;
 }
 
 // Tap-to-see-threats functionality
-function addSquareClickHandlers() {
-    // Add click handlers to all squares - much simpler now since toggle turns off after use
-    for (let file of 'abcdefgh') {
-        for (let rank of '12345678') {
-            const square = file + rank;
-            const $square = $board.find('.square-' + square);
-            
-            $square.off('click').on('click', function(e) {
-                // Only show threats if the toggle is enabled
-                if (!showThreats) return;
-                
-                // Show threats and automatically disable toggle
-                showThreatsToSquare(square);
-            });
-        }
+function onSquareClick(square) {
+    // Tap-to-move: second tap on a destination square
+    if (!showThreats) {
+        if (!moveFrom || square === moveFrom) return;
+        const from = moveFrom;
+        clearSquareThreats();
+        if (tryMove(from, square)) onSnapEnd();
+        return;
     }
+    
+    // Show threats and automatically disable toggle
+    showThreatsToSquare(square);
 }
 
 function showThreatsToSquare(square) {
     clearSquareThreats();
+    showCheckMark();
     selectedSquare = square;
     showingSquareThreats = true;
     
-    // Find all pieces that can attack this square
-    const attackers = getSquareAttackers(square);
+    hintsUsed++;
+    updateHintInfo();
+    
+    // Find all pieces of the side that just moved that attack this square
+    const attackers = attackersOf(square, game.turn() === 'w' ? 'b' : 'w');
     
     // Highlight the selected square with red border based on threat count
     if (attackers.length > 0) {
@@ -1166,125 +1585,125 @@ function showThreatsToSquare(square) {
             addSquareHighlight(attackerSquare, 'square-attacker', 0);
         });
         
-        // Show info about threats
-        const piece = game.get(square);
-        const pieceText = piece ? `${piece.color === 'w' ? 'לבן' : 'שחור'} ${getPieceText(piece.type)}` : 'ריק';
-        const currentPlayer = game.turn();
-        const opponentText = currentPlayer === 'w' ? 'שחור' : 'לבן';
-        console.log(`כיכר ${square} (${pieceText}) מאוימת על ידי ${attackers.length} כלים ${opponentText}:`, attackers);
     } else {
         // No threats - just show blue selection
         addSquareHighlight(square, 'selected-square', 0);
-        
-        const currentPlayer = game.turn();
-        const opponentText = currentPlayer === 'w' ? 'שחור' : 'לבן';
-        console.log(`כיכר ${square} לא מאוימת על ידי כלים ${opponentText}`);
     }
     
     // Turn off the toggle after showing threats (makes kid "work" for the hint)
-    showThreats = false;
-    $('#showThreats').prop('checked', false);
+    setThreatMode(false);
 }
 
-function getSquareAttackers(square) {
-    const attackers = [];
-    const currentPlayer = game.turn();
-    const opponent = currentPlayer === 'w' ? 'b' : 'w';
-    
-    // We need to check what opponent pieces are DEFENDING this square
-    // This means: if we put a piece there, what could capture it?
-    
-    // Save current game state
-    const originalFen = game.fen();
-    
-    // Get all opponent pieces and check if they can attack this square
-    const board = game.board();
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const piece = board[row][col];
-            if (piece && piece.color === opponent) {
-                const fromSquare = String.fromCharCode(97 + col) + (8 - row);
-                
-                // Check if this piece defends/can attack the target square
-                if (canPieceDefendSquare(piece, fromSquare, square, opponent)) {
-                    attackers.push(fromSquare);
+// Squares of `color` pieces that attack `square` (pins are ignored, like "who is aiming at this square")
+function attackersOf(square, color) {
+    const b = game.board(); // b[row][col], row 0 is rank 8
+    const tc = square.charCodeAt(0) - 97, tr = 8 - parseInt(square[1]);
+    const out = [];
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = b[r][c];
+            if (!p || p.color !== color || (r === tr && c === tc)) continue;
+            const dr = tr - r, dc = tc - c, ar = Math.abs(dr), ac = Math.abs(dc);
+            let hit = false;
+            if (p.type === 'p') hit = ac === 1 && dr === (color === 'w' ? -1 : 1);
+            else if (p.type === 'n') hit = ar * ac === 2;
+            else if (p.type === 'k') hit = Math.max(ar, ac) === 1;
+            else if ((p.type !== 'b' && (dr === 0 || dc === 0)) || (p.type !== 'r' && ar === ac)) {
+                // Slider on a matching line: every square in between must be empty
+                const sr = Math.sign(dr), sc = Math.sign(dc);
+                hit = true;
+                for (let rr = r + sr, cc = c + sc; rr !== tr || cc !== tc; rr += sr, cc += sc) {
+                    if (b[rr][cc]) { hit = false; break; }
                 }
             }
+            if (hit) out.push(String.fromCharCode(97 + c) + (8 - r));
         }
     }
-    
-    return attackers;
+    return out;
 }
 
-// Helper function to check if a piece can defend/attack a square
-function canPieceDefendSquare(piece, from, to, color) {
-    // We need to check if this piece CONTROLS the square (can attack it)
-    // regardless of what's currently on the target square
-    
-    // Special handling for pawns - they control diagonal squares
-    if (piece.type === 'p') {
-        const fromFile = from.charCodeAt(0);
-        const fromRank = parseInt(from[1]);
-        const toFile = to.charCodeAt(0);
-        const toRank = parseInt(to[1]);
-        
-        // Check if it's a diagonal attack (one file away, one rank in correct direction)
-        const fileDiff = Math.abs(toFile - fromFile);
-        const rankDiff = toRank - fromRank;
-        
-        if (color === 'w') {
-            // White pawns control diagonally upward squares
-            return fileDiff === 1 && rankDiff === 1;
-        } else {
-            // Black pawns control diagonally downward squares  
-            return fileDiff === 1 && rankDiff === -1;
-        }
+// Pieces of `color` (not the king) that can be won: undefended, or attacked by something cheaper
+function hangingPieces(color) {
+    const enemy = color === 'w' ? 'b' : 'w';
+    const out = [];
+    game.board().forEach((row, r) => row.forEach((p, c) => {
+        if (!p || p.color !== color || p.type === 'k') return;
+        const sq = String.fromCharCode(97 + c) + (8 - r);
+        const attackers = attackersOf(sq, enemy);
+        if (!attackers.length) return;
+        // A king can only take undefended pieces, so treat it as the most expensive attacker
+        const cheapest = Math.min(...attackers.map(a => game.get(a).type === 'k' ? 100 : PIECE_VALUES[game.get(a).type]));
+        if (!attackersOf(sq, color).length || cheapest < PIECE_VALUES[p.type]) out.push(sq);
+    }));
+    return out;
+}
+
+function hangingValue(color) {
+    return hangingPieces(color).reduce((sum, sq) => sum + PIECE_VALUES[game.get(sq).type], 0);
+}
+
+// Marks that stay on the board while it's the child's turn: their king in check (all levels),
+// and on Beginner their pieces in danger
+function showAutoHints() {
+    const me = playerColor === 'white' ? 'w' : 'b';
+    if (game.turn() !== me) return;
+    showCheckMark();
+    if (LEVELS[difficulty].autoHints) {
+        const enemy = me === 'w' ? 'b' : 'w';
+        hangingPieces(me).forEach(sq => addSquareHighlight(sq, 'threatened-square', attackersOf(sq, enemy).length));
     }
-    
-    // For other pieces, we need to check if they can attack that square
-    // We'll temporarily place an enemy piece there and see if they can capture it
-    const originalFen = game.fen();
-    
-    try {
-        // Create a temporary position with an enemy piece on the target square
-        const tempGame = new Chess(originalFen);
-        
-        // Remove whatever is on the target square
-        const targetPiece = tempGame.get(to);
-        if (targetPiece) {
-            tempGame.remove(to);
+}
+
+function showCheckMark() {
+    if (!game.in_check()) return;
+    const me = game.turn();
+    const kingSq = game.board().flat().map((p, i) => p && p.type === 'k' && p.color === me ? String.fromCharCode(97 + i % 8) + (8 - Math.floor(i / 8)) : null).find(Boolean);
+    addSquareHighlight(kingSq, 'check-square', 0);
+}
+
+// Hint budget (only when limits are on); both detectors are disabled when it runs out
+function updateHintInfo() {
+    const level = LEVELS[difficulty];
+    const limit = limitHints ? level.hintLimit : Infinity;
+    const left = limit - hintsUsed;
+    $('#showThreats, #showDanger').prop('disabled', left <= 0);
+    $('#hintCount').prop('hidden', !(limit > 0 && limit < Infinity)).text(t('hintsLeft', { n: Math.max(left, 0) }));
+    let text;
+    if (limit === Infinity) text = t('hintInfoUnlimited');
+    else if (limit === 0) text = t('hintInfoNone');
+    else if (left > 0) text = t('hintInfoLeft', { n: left });
+    else text = t('hintInfoOut');
+    if (level.autoHints) text += t('hintInfoBeginner');
+    $('#hintInfo').text(text);
+    $('#levelCaption').text(t('caption_' + difficulty));
+}
+
+// One-shot hint: mark every piece of the child's that is attacked right now, for a moment
+function flashDangerPieces() {
+    const me = playerColor === 'white' ? 'w' : 'b';
+    const enemy = me === 'w' ? 'b' : 'w';
+    hintsUsed++;
+    updateHintInfo();
+    $('.danger-flash').remove();
+    let found = 0;
+    game.board().forEach((row, r) => row.forEach((p, c) => {
+        if (!p || p.color !== me || p.type === 'k') return;
+        const sq = String.fromCharCode(97 + c) + (8 - r);
+        const attackers = attackersOf(sq, enemy).length;
+        if (attackers) {
+            found++;
+            addSquareHighlight(sq, 'threatened-square', attackers)?.addClass('danger-flash');
         }
-        
-        // Place an enemy piece there (opposite color to the attacking piece)
-        const enemyColor = color === 'w' ? 'b' : 'w';
-        tempGame.put({ type: 'p', color: enemyColor }, to);
-        
-        // Switch turns to the attacking piece's color
-        const fenParts = tempGame.fen().split(' ');
-        fenParts[1] = color;
-        const testFen = fenParts.join(' ');
-        
-        tempGame.load(testFen);
-        
-        // Try to capture the piece on the target square
-        const move = tempGame.move({
-            from: from,
-            to: to,
-            promotion: 'q'
-        });
-        
-        return move !== null;
-        
-    } catch (e) {
-        // Something went wrong, return false
-        return false;
-    }
+    }));
+    if (!found) showToast(t('noDanger'), true);
+    setTimeout(() => $('.danger-flash').remove(), 2500);
 }
 
 function clearSquareThreats() {
     $('.square-highlight').remove();
     selectedSquare = null;
     showingSquareThreats = false;
+    moveFrom = null;
 }
 
 function addSquareHighlight(square, className, threatCount) {
@@ -1317,45 +1736,11 @@ function addSquareHighlight(square, className, threatCount) {
     });
     
     $board.append(highlight);
+    return highlight;
 }
 
 function getPieceText(pieceType) {
-    const pieces = {
-        'p': 'רגלי',
-        'n': 'סוס',
-        'b': 'רץ',
-        'r': 'צריח',
-        'q': 'מלכה',
-        'k': 'מלך'
-    };
-    return pieces[pieceType] || pieceType;
-}
-
-// Toggle collapsible difficulty section
-window.toggleDifficulty = function() {
-    const selector = document.getElementById('difficultySelector');
-    const arrow = document.getElementById('collapseArrow');
-    
-    if (selector.classList.contains('collapsed')) {
-        selector.classList.remove('collapsed');
-        arrow.textContent = '▲';
-    } else {
-        selector.classList.add('collapsed'); 
-        arrow.textContent = '▼';
-    }
-}
-
-window.toggleInstructions = function() {
-    const content = document.getElementById('instructionsContent');
-    const arrow = document.getElementById('instructionsArrow');
-    
-    if (content.classList.contains('collapsed')) {
-        content.classList.remove('collapsed');
-        arrow.textContent = '▲';
-    } else {
-        content.classList.add('collapsed'); 
-        arrow.textContent = '▼';
-    }
+    return STRINGS[lang].pieces[pieceType] || pieceType;
 }
 
 // Show color selection modal
@@ -1369,6 +1754,8 @@ function startNewGame(color) {
     
     // Hide modal
     $('#colorModal').hide();
+    $('#endModal').hide();
+    lastStatus = '';
     
     // Reset game
     game.reset();
@@ -1377,18 +1764,16 @@ function startNewGame(color) {
     board.orientation(color);
     board.start();
     
-    moveHistory = [];
+    hintsUsed = 0;
+    updateHintInfo();
     clearSquareThreats();
     
     // Turn off threat toggle on new game
-    showThreats = false;
-    $('#showThreats').prop('checked', false);
+    setThreatMode(false);
     
     updateStatus();
     updateCapturedPieces();
     
-    // Re-add click handlers after board reset
-    setTimeout(() => addSquareClickHandlers(), 100);
     
     // If player chose black, computer makes first move
     if (color === 'black') {
@@ -1396,103 +1781,94 @@ function startNewGame(color) {
     }
 }
 
-// Save game functionality
-function saveGame() {
-    if (game.history().length === 0) {
-        alert('אין משחק לשמירה - התחילו משחק חדש תחילה!');
-        return;
-    }
-    
-    const gameState = {
-        fen: game.fen(),
-        playerColor: playerColor,
-        difficulty: difficulty,
-        moveHistory: [...moveHistory],
-        timestamp: new Date().toLocaleString('he-IL'),
-        moves: game.history().length
-    };
-    
-    // Save to localStorage
-    const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-    
-    // Add the new game with a unique ID
-    gameState.id = Date.now();
-    gameState.name = `משחק ${gameState.moves} מהלכים - ${gameState.timestamp}`;
-    savedGames.push(gameState);
-    
-    // Keep only the last 10 saved games
-    if (savedGames.length > 10) {
-        savedGames.shift();
-    }
-    
-    localStorage.setItem('chessGames', JSON.stringify(savedGames));
-    
-    alert(`המשחק נשמר בהצלחה! \n${gameState.name}`);
+// Saved games live in this browser (localStorage), newest last
+function readSaves() {
+    try { return JSON.parse(localStorage.getItem('chessGames') || '[]'); } catch (e) { return []; }
 }
 
-// Load game functionality
-function loadGame() {
-    const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-    
-    if (savedGames.length === 0) {
-        alert('אין משחקים שמורים!');
+function writeSaves(saves) {
+    try { localStorage.setItem('chessGames', JSON.stringify(saves)); return true; } catch (e) { return false; }
+}
+
+// Save: ask for a name first
+function saveGame() {
+    if (game.history().length === 0) {
+        showToast(t('noGameToSave'));
         return;
     }
-    
-    // Create selection dialog
-    let options = 'בחרו משחק לטעינה:\n\n';
-    savedGames.forEach((game, index) => {
-        options += `${index + 1}. ${game.name}\n`;
+    $('#saveName').val(t('defaultSaveName', { n: game.history().length }));
+    $('#saveModal').show();
+    $('#saveName').trigger('focus').trigger('select');
+}
+
+function confirmSave(e) {
+    e.preventDefault();
+    const name = $('#saveName').val().trim() || t('defaultSaveName', { n: game.history().length });
+    const saves = readSaves();
+    saves.push({
+        id: Date.now(),
+        name,
+        timestamp: new Date().toLocaleString(lang === 'he' ? 'he-IL' : 'en-US'),
+        moves: game.history().length,
+        fen: game.fen(),
+        pgn: game.pgn(), // full move list, so captured pieces and undo survive a reload
+        playerColor,
+        difficulty
     });
-    options += '\nהזינו מספר (1-' + savedGames.length + ') או לחצו Cancel לביטול:';
-    
-    const choice = prompt(options);
-    
-    if (!choice) return; // User cancelled
-    
-    const gameIndex = parseInt(choice) - 1;
-    
-    if (gameIndex < 0 || gameIndex >= savedGames.length || isNaN(gameIndex)) {
-        alert('מספר לא תקין!');
-        return;
-    }
-    
-    const savedGame = savedGames[gameIndex];
-    
-    // Confirm loading
-    if (!confirm(`לטעון את המשחק:\n${savedGame.name}?\n\nהמשחק הנוכחי יאבד!`)) {
-        return;
-    }
-    
-    // Load the saved game state
+    while (saves.length > 20) saves.shift();
+    $('#saveModal').hide();
+    showToast(writeSaves(saves) ? t('saved', { name }) : t('saveFailed'), true);
+}
+
+// Load: a tappable list, newest first, each with a delete button
+function loadGame() {
+    renderSavedList();
+    $('#loadModal').show();
+}
+
+function renderSavedList() {
+    const saves = readSaves();
+    const $list = $('#savedList').empty();
+    $('#noSaves').prop('hidden', saves.length > 0);
+    saves.slice().reverse().forEach(saved => {
+        const level = LEVELS[saved.difficulty] ? saved.difficulty : 'beginner';
+        const $open = $('<button type="button" class="saved-item">')
+            .append($('<span class="saved-name">').text(saved.name))
+            .append($('<span class="saved-meta">').text(`${saved.timestamp} · ${t('level_' + level)}`))
+            .on('click', () => restoreGame(saved));
+        const $delete = $('<button type="button" class="saved-delete">×</button>')
+            .attr('aria-label', t('deleteSave', { name: saved.name }))
+            .on('click', () => {
+                writeSaves(readSaves().filter(g => g.id !== saved.id));
+                renderSavedList();
+            });
+        $list.append($('<li class="saved-row">').append($open, $delete));
+    });
+}
+
+function restoreGame(savedGame) {
+    $('#loadModal').hide();
     try {
-        game.load(savedGame.fen);
+        if (!(savedGame.pgn && game.load_pgn(savedGame.pgn))) game.load(savedGame.fen); // older saves have only the position
         playerColor = savedGame.playerColor;
-        difficulty = savedGame.difficulty;
-        moveHistory = [...savedGame.moveHistory];
-        
-        // Update board orientation and position
+        difficulty = LEVELS[savedGame.difficulty] ? savedGame.difficulty : 'beginner'; // old saves used 'easy'
+        hintsUsed = 0;
+        lastStatus = '';
+
         board.orientation(playerColor);
-        board.position(savedGame.fen);
-        
-        // Update UI
+        board.position(game.fen());
         $(`input[name="difficulty"][value="${difficulty}"]`).prop('checked', true);
-        
-        // Clear threats and update status
+
         clearSquareThreats();
-        showThreats = false;
-        $('#showThreats').prop('checked', false);
-        
+        setThreatMode(false);
         updateStatus();
         updateCapturedPieces();
-        
-        // Re-add click handlers
-        setTimeout(() => addSquareClickHandlers(), 100);
-        
-        alert(`המשחק נטען בהצלחה!\n${savedGame.name}`);
-        
+        updateHintInfo();
+        showAutoHints();
+        afterPlayerMove(); // saved while the computer was thinking: let it move
+        showToast(t('loaded', { name: savedGame.name }), true);
     } catch (error) {
-        alert('שגיאה בטעינת המשחק. הקובץ עלול להיות פגום.');
+        showToast(t('loadError'));
         console.error('Load game error:', error);
     }
 }
