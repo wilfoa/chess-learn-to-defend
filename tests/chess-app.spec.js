@@ -25,8 +25,8 @@ test.describe('Basic loading', () => {
   });
 
   test('shows Hebrew title, heading and subtitle', async ({ page }) => {
-    await expect(page).toHaveTitle('גלאי איומים בשחמט לילדים');
-    await expect(page.locator('h1')).toContainText('גלאי איומים בשחמט');
+    await expect(page).toHaveTitle('על המשמר! שחמט לילדים');
+    await expect(page.locator('h1')).toContainText('על המשמר!');
     await expect(page.locator('.subtitle')).toContainText('למדו לזהות איומים ולהגן על הכלים שלכם');
   });
 
@@ -59,7 +59,7 @@ test.describe('Basic loading', () => {
 test('language switch translates the page, flips direction, and is remembered', async ({ page }) => {
   await newGame(page);
   await page.click('.lang-btn[data-lang="en"]');
-  await expect(page).toHaveTitle('Chess Threat Spotter for Kids');
+  await expect(page).toHaveTitle('On Guard! Chess for Kids');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
   await expect(page.locator('#resetBtn')).toContainText('New game');
   await expect(page.locator('#currentTurnText')).toContainText('Your turn');

@@ -25,9 +25,9 @@ const PIECE_VALUES = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
 // Every piece of UI text, per language. Markup uses data-i18n="key"; code uses t('key', {vars})
 const STRINGS = {
     he: {
-        pageTitle: 'גלאי איומים בשחמט לילדים',
-        appTitle: 'גלאי איומים בשחמט',
-        subtitle: 'למדו לזהות איומים ולהגן על הכלים שלכם!',
+        pageTitle: 'על המשמר! שחמט לילדים',
+        appTitle: 'על המשמר!',
+        subtitle: 'שחמט לילדים: למדו לזהות איומים ולהגן על הכלים שלכם',
         dedication: 'מוקדש באהבה לאדם וילף ❤️',
         yourTurn: 'התור שלכם!',
         computerThinking: 'המחשב חושב…',
@@ -98,9 +98,9 @@ const STRINGS = {
         lookAtBoard: 'להסתכל על הלוח'
     },
     en: {
-        pageTitle: 'Chess Threat Spotter for Kids',
-        appTitle: 'Chess Threat Spotter',
-        subtitle: 'Learn to spot threats and protect your pieces!',
+        pageTitle: 'On Guard! Chess for Kids',
+        appTitle: 'On Guard!',
+        subtitle: 'Chess for kids: learn to spot threats and protect your pieces',
         dedication: 'Dedicated with love to Adam Wilf ❤️',
         yourTurn: 'Your turn!',
         computerThinking: 'Computer is thinking…',
