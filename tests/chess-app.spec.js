@@ -371,3 +371,62 @@ test('medium and hard do not trade the queen for a defended pawn', async ({ page
   });
   expect(result).toEqual([true, true, true, true, true]);
 });
+
+test.describe('Teaching levels', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.click('#resetBtn');
+    await page.click('#playWhite');
+    await page.waitForTimeout(500);
+  });
+
+  test('attackersOf respects blocking pieces', async ({ page }) => {
+    const r = await page.evaluate(() => {
+      const before = attackersOf('f3', 'w').sort();
+      game.move('e4');
+      return [before, attackersOf('f3', 'w').sort()];
+    });
+    expect(r).toEqual([['e2', 'g1', 'g2'], ['d1', 'g1', 'g2']]);
+  });
+
+  test('beginner and attacker take a piece left undefended', async ({ page }) => {
+    const r = await page.evaluate(() => ['beginner', 'attacker'].map(level => {
+      difficulty = level;
+      game.load('4k3/8/3q4/4N3/8/8/8/4K3 b - - 0 1');
+      makeComputerMove();
+      return game.history({ verbose: true }).pop().to;
+    }));
+    expect(r).toEqual(['e5', 'e5']);
+  });
+
+  test('warns before a move that hangs a piece and can take it back', async ({ page }) => {
+    await page.evaluate(() => {
+      difficulty = 'beginner';
+      game.load('4k3/8/8/8/8/1q6/8/4K1N1 w - - 0 1');
+      board.position(game.fen(), false);
+      tryMove('g1', 'f3');
+    });
+    await expect(page.locator('#warnModal')).toBeVisible();
+    await page.click('#warnUndo');
+    await expect(page.locator('#warnModal')).toBeHidden();
+    expect(await page.evaluate(() => game.get('g1') && game.turn())).toBe('w');
+  });
+
+  test('king in check is marked and tapping it shows the attacker', async ({ page }) => {
+    await page.evaluate(() => {
+      difficulty = 'attacker';
+      game.load('4k3/8/8/8/8/8/4q3/K7 b - - 0 1');
+      board.position(game.fen(), false);
+      game.move('Qe1'); // black queen checks along the first rank
+      board.position(game.fen(), false);
+      clearSquareThreats();
+      showAutoHints();
+    });
+    await expect(page.locator('.check-square')).toHaveCount(1);
+    await page.locator('#showThreats').check({ force: true });
+    await page.click('.square-a1');
+    await expect(page.locator('.threatened-square')).toHaveCount(1);
+    await expect(page.locator('.square-attacker')).toHaveCount(1);
+  });
+});

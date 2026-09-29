@@ -6,8 +6,20 @@ let showThreats = false; // Start with threats off
 let debugMode = false; // Set to true to see debug info
 let moveHistory = [];
 let gameMode = 'computer'; // Always play against computer
-let difficulty = 'easy'; // 'easy', 'medium', 'hard'
+let difficulty = 'beginner'; // key of LEVELS
 let isComputerTurn = false;
+let hintsUsed = 0; // threat hints used this game (limited on higher levels)
+
+// What each level teaches. depth: search depth (none = teaching moves);
+// blunder: chance the computer leaves one of its pieces hanging on purpose;
+// autoHints: mark the child's hanging pieces automatically; warnBlunders: ask before a move that hangs a piece
+const LEVELS = {
+    beginner: { blunder: 0.3,  autoHints: true,  hintLimit: Infinity, warnBlunders: true },
+    attacker: { blunder: 0.15, autoHints: false, hintLimit: Infinity, warnBlunders: true },
+    medium:   { depth: 2, blunder: 0, autoHints: false, hintLimit: 3, warnBlunders: false },
+    hard:     { depth: 3, blunder: 0, autoHints: false, hintLimit: 0, warnBlunders: false }
+};
+const PIECE_VALUES = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
 let selectedSquare = null; // For tap-to-see-threats feature
 let showingSquareThreats = false;
 let playerColor = 'white'; // Player's color choice
@@ -42,22 +54,32 @@ $(document).ready(function() {
         showThreats = this.checked;
         if (!showThreats) {
             clearSquareThreats();
+            showAutoHints();
         }
     });
     $('input[name="difficulty"]').on('change', function() {
         difficulty = this.value;
+        clearSquareThreats();
+        showAutoHints();
+        updateHintInfo();
     });
-    
+    updateHintInfo();
+
     // Modal event listeners
     $('#playWhite').on('click', () => startNewGame('white'));
     $('#playBlack').on('click', () => startNewGame('black'));
+    $('#warnKeep').on('click', keepWarnedMove);
+    $('#warnUndo').on('click', takeBackWarnedMove);
 });
 
 // Check if a piece can be dragged
 function onDragStart(source, piece, position, orientation) {
     // Don't allow moves if game is over
     if (game.game_over()) return false;
-    
+
+    // Threat detector is armed: a tap on a piece should show its threats, so don't start a drag
+    if (showThreats) return false;
+
     // Don't allow moves during computer's turn
     if (isComputerTurn) return false;
     
@@ -77,7 +99,7 @@ function onDragStart(source, piece, position, orientation) {
 // Handle piece drop (a tap on own piece arrives here as source === target)
 function onDrop(source, target) {
     if (source === target) {
-        clearSquareThreats();
+        $('.square-highlight.selected-square').remove(); // keep hint/check marks visible
         moveFrom = source;
         addSquareHighlight(source, 'selected-square', 0);
         return 'snapback';
@@ -87,56 +109,84 @@ function onDrop(source, target) {
 
 // Make the player's move; returns false if illegal
 function tryMove(source, target) {
+    const me = game.turn();
+
     // Save current position for undo
     moveHistory.push(game.fen());
-    
+
     // Try to make the move
     let move = game.move({
         from: source,
         to: target,
         promotion: 'q' // Always promote to queen for simplicity
     });
-    
+
     if (move === null) {
         moveHistory.pop();
         return false;
     }
-    
+
     updateStatus();
     updateCapturedPieces();
-    
+
     // Clear any threat displays after a move
     clearSquareThreats();
-    
+
+    // Lower levels: ask before a move that leaves a piece to be captured (an even-or-better trade doesn't count)
+    if (LEVELS[difficulty].warnBlunders && !game.game_over()) {
+        const tradedFairly = move.captured && PIECE_VALUES[move.captured] >= PIECE_VALUES[move.piece];
+        const hanging = hangingPieces(me).filter(sq => !(tradedFairly && sq === move.to));
+        if (hanging.length) {
+            showBlunderWarning(hanging);
+            return true;
+        }
+    }
+
+    afterPlayerMove();
+    return true;
+}
+
+function afterPlayerMove() {
     // If it's computer's turn, make computer move
     const computerColor = playerColor === 'white' ? 'b' : 'w';
     if (gameMode === 'computer' && game.turn() === computerColor && !game.game_over()) {
         setTimeout(makeComputerMove, 500); // Small delay for better UX
     }
-    return true;
+}
+
+function showBlunderWarning(squares) {
+    const enemy = game.turn();
+    const names = squares.map(sq => 'ה' + getPieceText(game.get(sq).type) + ' (' + sq + ')').join(', ');
+    $('#warnText').text('אחרי המהלך הזה המחשב יכול לאכול את ' + names + '. להמשיך?');
+    squares.forEach(sq => addSquareHighlight(sq, 'threatened-square', attackersOf(sq, enemy).length));
+    isComputerTurn = true; // block moves until the child decides
+    $('#warnModal').show();
+}
+
+function keepWarnedMove() {
+    $('#warnModal').hide();
+    isComputerTurn = false;
+    clearSquareThreats();
+    afterPlayerMove();
+}
+
+function takeBackWarnedMove() {
+    $('#warnModal').hide();
+    isComputerTurn = false;
+    game.undo();
+    moveHistory.pop();
+    board.position(game.fen());
+    clearSquareThreats();
+    updateStatus();
+    updateCapturedPieces();
+    showAutoHints();
+    setTimeout(() => addSquareClickHandlers(), 100);
 }
 
 // Update board position after the piece snap
 function onSnapEnd() {
     board.position(game.fen());
     // Re-add click handlers after board update
-    setTimeout(() => addSquareClickHandlers(), 100);
-}
-
-// Reset the game
-function resetGame() {
-    game.reset();
-    board.start();
-    moveHistory = [];
-    clearSquareThreats();
-    
-    // Turn off threat toggle on new game
-    showThreats = false;
-    $('#showThreats').prop('checked', false);
-    
-    updateStatus();
-    updateCapturedPieces();
-    // Re-add click handlers after board reset
     setTimeout(() => addSquareClickHandlers(), 100);
 }
 
@@ -148,6 +198,7 @@ function undoMove() {
         clearSquareThreats();
         updateStatus();
         updateCapturedPieces();
+        showAutoHints();
         // Re-add click handlers after board update
         setTimeout(() => addSquareClickHandlers(), 100);
     }
@@ -255,21 +306,8 @@ function makeComputerMove() {
         return;
     }
     
-    let selectedMove;
-    
-    switch (difficulty) {
-        case 'easy':
-            selectedMove = getRandomMove(moves);
-            break;
-        case 'medium':
-            selectedMove = getSearchMove(moves, 2); // sees the reply: won't hang pieces
-            break;
-        case 'hard':
-            selectedMove = getSearchMove(moves, 3);
-            break;
-        default:
-            selectedMove = getRandomMove(moves);
-    }
+    const level = LEVELS[difficulty];
+    const selectedMove = level.depth ? getSearchMove(moves, level.depth) : getTeachingMove(moves, level);
     
     // Make the move
     if (selectedMove) {
@@ -278,6 +316,8 @@ function makeComputerMove() {
         
         updateStatus();
         updateCapturedPieces();
+        clearSquareThreats();
+        showAutoHints();
         // Re-add click handlers after board update
         setTimeout(() => addSquareClickHandlers(), 100);
     }
@@ -285,9 +325,43 @@ function makeComputerMove() {
     isComputerTurn = false;
 }
 
-// Easy: Random move
-function getRandomMove(moves) {
-    return moves[Math.floor(Math.random() * moves.length)];
+function randomOf(items) {
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+// Beginner/Attacker: punish pieces the child left hanging, sometimes leave one of ours hanging on purpose,
+// otherwise Beginner plays randomly and Attacker picks the move that creates the biggest threat
+function getTeachingMove(moves, level) {
+    const me = game.turn();
+    const you = me === 'w' ? 'b' : 'w';
+    
+    // Free material: an undefended piece, or one worth more than the piece taking it
+    const grabs = moves.filter(m => m.captured &&
+        (!attackersOf(m.to, you).length || PIECE_VALUES[m.piece] < PIECE_VALUES[m.captured]));
+    if (grabs.length) {
+        const best = Math.max(...grabs.map(m => PIECE_VALUES[m.captured]));
+        return randomOf(grabs.filter(m => PIECE_VALUES[m.captured] === best));
+    }
+    
+    const scored = moves.map(move => {
+        game.move(move);
+        const score = { move, threat: hangingValue(you), gift: hangingValue(me) };
+        game.undo();
+        return score;
+    });
+    const giftNow = hangingValue(me);
+    
+    // Deliberate mistake: give the child something to capture
+    if (Math.random() < level.blunder) {
+        const gifts = scored.filter(s => s.gift > giftNow);
+        if (gifts.length) return randomOf(gifts).move;
+    }
+    
+    if (difficulty === 'beginner') return randomOf(moves);
+    
+    const scoreOf = s => s.threat - s.gift;
+    const best = Math.max(...scored.map(scoreOf));
+    return randomOf(scored.filter(s => scoreOf(s) === best)).move;
 }
 
 // Medium/Hard: pick randomly among the best moves found by a material search `depth` plies deep
@@ -325,10 +399,9 @@ function negamax(depth, alpha, beta) {
 }
 
 function materialScore(color) {
-    const pieceValues = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
     let score = 0;
     game.board().forEach(row => row.forEach(piece => {
-        if (piece) score += piece.color === color ? pieceValues[piece.type] : -pieceValues[piece.type];
+        if (piece) score += piece.color === color ? PIECE_VALUES[piece.type] : -PIECE_VALUES[piece.type];
     }));
     return score;
 }
@@ -360,11 +433,15 @@ function addSquareClickHandlers() {
 
 function showThreatsToSquare(square) {
     clearSquareThreats();
+    showCheckMark();
     selectedSquare = square;
     showingSquareThreats = true;
     
-    // Find all pieces that can attack this square
-    const attackers = getSquareAttackers(square);
+    hintsUsed++;
+    updateHintInfo();
+    
+    // Find all pieces of the side that just moved that attack this square
+    const attackers = attackersOf(square, game.turn() === 'w' ? 'b' : 'w');
     
     // Highlight the selected square with red border based on threat count
     if (attackers.length > 0) {
@@ -396,100 +473,85 @@ function showThreatsToSquare(square) {
     $('#showThreats').prop('checked', false);
 }
 
-function getSquareAttackers(square) {
-    const attackers = [];
-    const currentPlayer = game.turn();
-    const opponent = currentPlayer === 'w' ? 'b' : 'w';
-    
-    // We need to check what opponent pieces are DEFENDING this square
-    // This means: if we put a piece there, what could capture it?
-    
-    // Save current game state
-    const originalFen = game.fen();
-    
-    // Get all opponent pieces and check if they can attack this square
-    const board = game.board();
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const piece = board[row][col];
-            if (piece && piece.color === opponent) {
-                const fromSquare = String.fromCharCode(97 + col) + (8 - row);
-                
-                // Check if this piece defends/can attack the target square
-                if (canPieceDefendSquare(piece, fromSquare, square, opponent)) {
-                    attackers.push(fromSquare);
+// Squares of `color` pieces that attack `square` (pins are ignored, like "who is aiming at this square")
+function attackersOf(square, color) {
+    const b = game.board(); // b[row][col], row 0 is rank 8
+    const tc = square.charCodeAt(0) - 97, tr = 8 - parseInt(square[1]);
+    const out = [];
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = b[r][c];
+            if (!p || p.color !== color || (r === tr && c === tc)) continue;
+            const dr = tr - r, dc = tc - c, ar = Math.abs(dr), ac = Math.abs(dc);
+            let hit = false;
+            if (p.type === 'p') hit = ac === 1 && dr === (color === 'w' ? -1 : 1);
+            else if (p.type === 'n') hit = ar * ac === 2;
+            else if (p.type === 'k') hit = Math.max(ar, ac) === 1;
+            else if ((p.type !== 'b' && (dr === 0 || dc === 0)) || (p.type !== 'r' && ar === ac)) {
+                // Slider on a matching line: every square in between must be empty
+                const sr = Math.sign(dr), sc = Math.sign(dc);
+                hit = true;
+                for (let rr = r + sr, cc = c + sc; rr !== tr || cc !== tc; rr += sr, cc += sc) {
+                    if (b[rr][cc]) { hit = false; break; }
                 }
             }
+            if (hit) out.push(String.fromCharCode(97 + c) + (8 - r));
         }
     }
-    
-    return attackers;
+    return out;
 }
 
-// Helper function to check if a piece can defend/attack a square
-function canPieceDefendSquare(piece, from, to, color) {
-    // We need to check if this piece CONTROLS the square (can attack it)
-    // regardless of what's currently on the target square
-    
-    // Special handling for pawns - they control diagonal squares
-    if (piece.type === 'p') {
-        const fromFile = from.charCodeAt(0);
-        const fromRank = parseInt(from[1]);
-        const toFile = to.charCodeAt(0);
-        const toRank = parseInt(to[1]);
-        
-        // Check if it's a diagonal attack (one file away, one rank in correct direction)
-        const fileDiff = Math.abs(toFile - fromFile);
-        const rankDiff = toRank - fromRank;
-        
-        if (color === 'w') {
-            // White pawns control diagonally upward squares
-            return fileDiff === 1 && rankDiff === 1;
-        } else {
-            // Black pawns control diagonally downward squares  
-            return fileDiff === 1 && rankDiff === -1;
-        }
+// Pieces of `color` (not the king) that can be won: undefended, or attacked by something cheaper
+function hangingPieces(color) {
+    const enemy = color === 'w' ? 'b' : 'w';
+    const out = [];
+    game.board().forEach((row, r) => row.forEach((p, c) => {
+        if (!p || p.color !== color || p.type === 'k') return;
+        const sq = String.fromCharCode(97 + c) + (8 - r);
+        const attackers = attackersOf(sq, enemy);
+        if (!attackers.length) return;
+        // A king can only take undefended pieces, so treat it as the most expensive attacker
+        const cheapest = Math.min(...attackers.map(a => game.get(a).type === 'k' ? 100 : PIECE_VALUES[game.get(a).type]));
+        if (!attackersOf(sq, color).length || cheapest < PIECE_VALUES[p.type]) out.push(sq);
+    }));
+    return out;
+}
+
+function hangingValue(color) {
+    return hangingPieces(color).reduce((sum, sq) => sum + PIECE_VALUES[game.get(sq).type], 0);
+}
+
+// Marks that stay on the board while it's the child's turn: their king in check (all levels),
+// and on Beginner their pieces in danger
+function showAutoHints() {
+    const me = playerColor === 'white' ? 'w' : 'b';
+    if (game.turn() !== me) return;
+    showCheckMark();
+    if (LEVELS[difficulty].autoHints) {
+        const enemy = me === 'w' ? 'b' : 'w';
+        hangingPieces(me).forEach(sq => addSquareHighlight(sq, 'threatened-square', attackersOf(sq, enemy).length));
     }
-    
-    // For other pieces, we need to check if they can attack that square
-    // We'll temporarily place an enemy piece there and see if they can capture it
-    const originalFen = game.fen();
-    
-    try {
-        // Create a temporary position with an enemy piece on the target square
-        const tempGame = new Chess(originalFen);
-        
-        // Remove whatever is on the target square
-        const targetPiece = tempGame.get(to);
-        if (targetPiece) {
-            tempGame.remove(to);
-        }
-        
-        // Place an enemy piece there (opposite color to the attacking piece)
-        const enemyColor = color === 'w' ? 'b' : 'w';
-        tempGame.put({ type: 'p', color: enemyColor }, to);
-        
-        // Switch turns to the attacking piece's color
-        const fenParts = tempGame.fen().split(' ');
-        fenParts[1] = color;
-        fenParts[3] = '-'; // an en passant square is invalid once the turn is flipped, and load() would fail
-        const testFen = fenParts.join(' ');
-        
-        tempGame.load(testFen);
-        
-        // Try to capture the piece on the target square
-        const move = tempGame.move({
-            from: from,
-            to: to,
-            promotion: 'q'
-        });
-        
-        return move !== null;
-        
-    } catch (e) {
-        // Something went wrong, return false
-        return false;
-    }
+}
+
+function showCheckMark() {
+    if (!game.in_check()) return;
+    const me = game.turn();
+    const kingSq = game.board().flat().map((p, i) => p && p.type === 'k' && p.color === me ? String.fromCharCode(97 + i % 8) + (8 - Math.floor(i / 8)) : null).find(Boolean);
+    addSquareHighlight(kingSq, 'check-square', 0);
+}
+
+// Hint budget per level; the toggle is disabled when it runs out
+function updateHintInfo() {
+    const level = LEVELS[difficulty];
+    const left = level.hintLimit - hintsUsed;
+    $('#showThreats').prop('disabled', left <= 0);
+    let text;
+    if (level.hintLimit === Infinity) text = 'הפעילו ואז לחצו על ריבוע לרמז. הרמז נסגר אוטומטית.';
+    else if (level.hintLimit === 0) text = 'ברמה קשה אין רמזים - בדקו לבד! 💪';
+    else if (left > 0) text = `נשארו ${left} רמזים במשחק הזה. הפעילו ואז לחצו על ריבוע.`;
+    else text = 'נגמרו הרמזים למשחק הזה 💪';
+    if (level.autoHints) text += ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.';
+    $('#hintInfo').text(text);
 }
 
 function clearSquareThreats() {
@@ -590,6 +652,8 @@ function startNewGame(color) {
     board.start();
     
     moveHistory = [];
+    hintsUsed = 0;
+    updateHintInfo();
     clearSquareThreats();
     
     // Turn off threat toggle on new game
@@ -680,7 +744,8 @@ function loadGame() {
     try {
         game.load(savedGame.fen);
         playerColor = savedGame.playerColor;
-        difficulty = savedGame.difficulty;
+        difficulty = LEVELS[savedGame.difficulty] ? savedGame.difficulty : 'beginner'; // old saves used 'easy'
+        hintsUsed = 0;
         moveHistory = [...savedGame.moveHistory];
         
         // Update board orientation and position
@@ -697,6 +762,8 @@ function loadGame() {
         
         updateStatus();
         updateCapturedPieces();
+        updateHintInfo();
+        showAutoHints();
         
         // Re-add click handlers
         setTimeout(() => addSquareClickHandlers(), 100);

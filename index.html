@@ -42,9 +42,7 @@
                                 <input type="checkbox" id="showThreats">
                                 <span class="slider"></span>
                             </label>
-                            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
-                                הפעילו ואז לחצו על ריבוע לרמז. הרמז נסגר אוטומטית.
-                            </p>
+                            <p id="hintInfo" style="font-size: 0.9em; color: #666; margin-top: 10px;"></p>
                         </div>
                         
                         <div class="column">
@@ -65,16 +63,20 @@
                     </div>
                     <div class="difficulty-selector collapsed" id="difficultySelector">
                         <label>
-                            <input type="radio" name="difficulty" value="easy" checked>
-                            🟢 קל - המחשב עושה מהלכים אקראיים
+                            <input type="radio" name="difficulty" value="beginner" checked>
+                            🟢 מתחיל - המחשב אוכל כלים שנשארו בלי הגנה. כלים שלכם בסכנה מסומנים, והמחשב מזהיר לפני טעות
+                        </label>
+                        <label>
+                            <input type="radio" name="difficulty" value="attacker">
+                            🟡 תוקף - המחשב מחפש לתקוף את הכלים שלכם. שימו לב לאיומים! המחשב מזהיר לפני טעות
                         </label>
                         <label>
                             <input type="radio" name="difficulty" value="medium">
-                            🟡 בינוני - המחשב מחפש מהלכים טובים
+                            🟠 בינוני - המחשב חושב מהלך קדימה ולא נותן כלים בחינם. 3 רמזים למשחק
                         </label>
                         <label>
                             <input type="radio" name="difficulty" value="hard">
-                            🔴 קשה - המחשב מנסה לנצח
+                            🔴 קשה - המחשב חושב שני מהלכים קדימה ומחפש מזלגות. בלי רמזים
                         </label>
                     </div>
                 </div>
@@ -99,9 +101,10 @@
                     <li>🔴 לחצו על כל ריבוע כדי לראות איזה כלים מאיימים עליו</li>
                     <li>📍 ככל שיותר כלים מאיימים, הגבול האדום יהיה עבה יותר</li>
                     <li>🎯 הריבוע שנבחר מסומן בכחול</li>
-                    <li>♟️ גררו כלים כדי לבצע מהלכים</li>
+                    <li>♟️ גררו כלי, או לחצו על כלי ואז על הריבוע שאליו הוא זז</li>
+                    <li>⚠️ כשהמלך שלכם בשח הוא מסומן - הפעילו את גלאי האיומים ולחצו עליו כדי לראות מי מאיים</li>
                     <li>🤖 בחרו צבע ושחקו נגד המחשב</li>
-                    <li>⚙️ בחרו רמת קושי: קל, בינוני או קשה</li>
+                    <li>⚙️ בחרו רמה: מתחיל, תוקף, בינוני או קשה</li>
                 </ul>
             </div>
         </div>
@@ -121,6 +124,16 @@
                     <span>שחור</span>
                 </button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Blunder warning (Beginner/Attacker levels) -->
+    <div id="warnModal" class="modal">
+        <div class="modal-content">
+            <h3>⚠️ רגע, בדקו!</h3>
+            <p id="warnText"></p>
+            <button id="warnUndo" class="btn btn-primary">↩️ אחזיר את המהלך</button>
+            <button id="warnKeep" class="btn btn-secondary">✔️ זה המהלך שלי</button>
         </div>
     </div>
     
