@@ -75,6 +75,27 @@ test.describe('Game logic', () => {
     await expect(page.locator('#currentTurnText')).toContainText('תור הלבן');
   });
 
+  test('save and load keep captured pieces, difficulty, and undo', async ({ page }) => {
+    await newGame(page);
+    page.on('dialog', d => d.accept(d.type() === 'prompt' ? '1' : undefined)); // alert/confirm/prompt of save & load
+    await page.evaluate(() => {
+      localStorage.removeItem('chessGames');
+      ['e4', 'd5', 'exd5', 'Qxd5'].forEach(m => game.move(m)); // each side has lost a pawn
+      difficulty = 'attacker';
+      saveGame();
+      startNewGame('white');
+      difficulty = 'hard';
+      loadGame();
+    });
+    await expect(page.locator('#whiteCaptured')).toContainText('♙');
+    await expect(page.locator('#blackCaptured')).toContainText('♟');
+    await expect(page.locator('input[name="difficulty"][value="attacker"]')).toBeChecked();
+    expect(await page.evaluate(() => difficulty)).toBe('attacker');
+    await page.click('#undoBtn'); // back to before exd5: black's pawn not yet taken, white's not either
+    await expect(page.locator('#blackCaptured')).toBeEmpty();
+    await expect(page.locator('.square-e4 img[data-piece="wP"]')).toHaveCount(1);
+  });
+
   test('shows a check warning', async ({ page }) => {
     await newGame(page);
     await page.evaluate(() => {

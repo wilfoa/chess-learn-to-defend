@@ -4,7 +4,6 @@ let board = null;
 let $board = $('#board');
 let showThreats = false; // Start with threats off
 let debugMode = false; // Set to true to see debug info
-let moveHistory = [];
 let gameMode = 'computer'; // Always play against computer
 let difficulty = 'beginner'; // key of LEVELS
 let isComputerTurn = false;
@@ -111,9 +110,6 @@ function onDrop(source, target) {
 function tryMove(source, target) {
     const me = game.turn();
 
-    // Save current position for undo
-    moveHistory.push(game.fen());
-
     // Try to make the move
     let move = game.move({
         from: source,
@@ -122,7 +118,6 @@ function tryMove(source, target) {
     });
 
     if (move === null) {
-        moveHistory.pop();
         return false;
     }
 
@@ -174,7 +169,6 @@ function takeBackWarnedMove() {
     $('#warnModal').hide();
     isComputerTurn = false;
     game.undo();
-    moveHistory.pop();
     board.position(game.fen());
     clearSquareThreats();
     updateStatus();
@@ -188,15 +182,17 @@ function onSnapEnd() {
 }
 
 // Undo last move
+// Take back the child's last move and the computer's reply. Uses game.undo() so the move
+// history (and with it the captured-pieces list) stays intact
 function undoMove() {
-    if (moveHistory.length > 0) {
-        game.load(moveHistory.pop());
-        board.position(game.fen());
-        clearSquareThreats();
-        updateStatus();
-        updateCapturedPieces();
-        showAutoHints();
-    }
+    const me = playerColor === 'white' ? 'w' : 'b';
+    if (isComputerTurn || !game.history({ verbose: true }).some(m => m.color === me)) return;
+    while (game.undo().color !== me) {}
+    board.position(game.fen());
+    clearSquareThreats();
+    updateStatus();
+    updateCapturedPieces();
+    showAutoHints();
 }
 
 // Games end only when nobody can win. Repetition and the 50-move rule are left out on purpose:
@@ -643,7 +639,6 @@ function startNewGame(color) {
     board.orientation(color);
     board.start();
     
-    moveHistory = [];
     hintsUsed = 0;
     updateHintInfo();
     clearSquareThreats();
@@ -673,7 +668,7 @@ function saveGame() {
         fen: game.fen(),
         playerColor: playerColor,
         difficulty: difficulty,
-        moveHistory: [...moveHistory],
+        pgn: game.pgn(), // full move list, so captured pieces and undo survive a reload
         timestamp: new Date().toLocaleString('he-IL'),
         moves: game.history().length
     };
@@ -732,11 +727,10 @@ function loadGame() {
     
     // Load the saved game state
     try {
-        game.load(savedGame.fen);
+        if (!(savedGame.pgn && game.load_pgn(savedGame.pgn))) game.load(savedGame.fen); // older saves have only the position
         playerColor = savedGame.playerColor;
         difficulty = LEVELS[savedGame.difficulty] ? savedGame.difficulty : 'beginner'; // old saves used 'easy'
         hintsUsed = 0;
-        moveHistory = [...savedGame.moveHistory];
         
         // Update board orientation and position
         board.orientation(playerColor);
@@ -754,8 +748,8 @@ function loadGame() {
         updateCapturedPieces();
         updateHintInfo();
         showAutoHints();
-        
-        
+        afterPlayerMove(); // saved while the computer was thinking: let it move
+
         alert(`המשחק נטען בהצלחה!\n${savedGame.name}`);
         
     } catch (error) {
