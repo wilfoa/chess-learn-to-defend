@@ -262,10 +262,10 @@ function makeComputerMove() {
             selectedMove = getRandomMove(moves);
             break;
         case 'medium':
-            selectedMove = getMediumMove(moves);
+            selectedMove = getSearchMove(moves, 2); // sees the reply: won't hang pieces
             break;
         case 'hard':
-            selectedMove = getHardMove(moves);
+            selectedMove = getSearchMove(moves, 3);
             break;
         default:
             selectedMove = getRandomMove(moves);
@@ -290,84 +290,46 @@ function getRandomMove(moves) {
     return moves[Math.floor(Math.random() * moves.length)];
 }
 
-// Medium: Prefer captures and checks
-function getMediumMove(moves) {
-    // First priority: captures
-    const captures = moves.filter(move => move.captured);
-    if (captures.length > 0) {
-        return captures[Math.floor(Math.random() * captures.length)];
-    }
-    
-    // Second priority: checks
-    const checks = moves.filter(move => {
-        game.move(move);
-        const inCheck = game.in_check();
-        game.undo();
-        return inCheck;
-    });
-    if (checks.length > 0) {
-        return checks[Math.floor(Math.random() * checks.length)];
-    }
-    
-    // Otherwise random
-    return getRandomMove(moves);
-}
-
-// Hard: Try to find best moves (simple evaluation)
-function getHardMove(moves) {
+// Medium/Hard: pick randomly among the best moves found by a material search `depth` plies deep
+function getSearchMove(moves, depth) {
     let bestMoves = [];
     let bestScore = -Infinity;
-    
     moves.forEach(move => {
         game.move(move);
-        let score = evaluatePosition();
-        
+        const score = -negamax(depth - 1, -Infinity, Infinity);
+        game.undo();
         if (score > bestScore) {
             bestScore = score;
             bestMoves = [move];
         } else if (score === bestScore) {
             bestMoves.push(move);
         }
-        
-        game.undo();
     });
-    
     return bestMoves[Math.floor(Math.random() * bestMoves.length)];
 }
 
-// Simple position evaluation
-function evaluatePosition() {
-    const pieceValues = {
-        'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0
-    };
-    
+// Alpha-beta search; score is from the side to move's point of view
+function negamax(depth, alpha, beta) {
+    if (depth === 0) return materialScore(game.turn());
+    const moves = game.moves({ verbose: true });
+    if (moves.length === 0) return game.in_check() ? -10000 - depth : 0; // mate sooner is worse; stalemate is 0
+    moves.sort((a, b) => (b.captured ? 1 : 0) - (a.captured ? 1 : 0)); // captures first prunes more
+    for (const move of moves) {
+        game.move(move);
+        const score = -negamax(depth - 1, -beta, -alpha);
+        game.undo();
+        if (score >= beta) return score;
+        if (score > alpha) alpha = score;
+    }
+    return alpha;
+}
+
+function materialScore(color) {
+    const pieceValues = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
     let score = 0;
-    const boardArray = game.board();
-    
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const piece = boardArray[row][col];
-            if (piece) {
-                const value = pieceValues[piece.type] || 0;
-                if (piece.color === 'b') {
-                    score += value;
-                } else {
-                    score -= value;
-                }
-            }
-        }
-    }
-    
-    // Bonus for checkmate
-    if (game.in_checkmate()) {
-        score += game.turn() === 'w' ? 1000 : -1000;
-    }
-    
-    // Bonus for check
-    if (game.in_check()) {
-        score += game.turn() === 'w' ? -10 : 10;
-    }
-    
+    game.board().forEach(row => row.forEach(piece => {
+        if (piece) score += piece.color === color ? pieceValues[piece.type] : -pieceValues[piece.type];
+    }));
     return score;
 }
 

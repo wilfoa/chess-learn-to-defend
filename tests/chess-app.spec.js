@@ -348,3 +348,26 @@ test('should move a piece by tapping source then destination', async ({ page }) 
   await expect(page.locator('.square-e4 img[data-piece="wP"]')).toHaveCount(1);
   await expect(page.locator('.square-e2 img')).toHaveCount(0);
 });
+
+test('medium and hard do not trade the queen for a defended pawn', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  const result = await page.evaluate(() => {
+    const out = [];
+    // Computer's queen can grab the bait pawn, but a pawn recaptures. Mirrored for the computer playing white.
+    const cases = [['white', '4k3/8/8/3q4/3P4/2P5/8/4K3 b - - 0 1', 'd4'],
+                   ['black', '4k3/8/2p5/3p4/3Q4/8/8/4K3 w - - 0 1', 'd5']];
+    for (const level of ['medium', 'hard']) {
+      for (const [color, fen, bait] of cases) {
+        playerColor = color; difficulty = level; game.load(fen);
+        makeComputerMove();
+        out.push(game.history({ verbose: true }).pop().to !== bait);
+      }
+    }
+    playerColor = 'white'; difficulty = 'hard'; game.reset();
+    const t = performance.now(); game.move('e4'); makeComputerMove();
+    out.push(performance.now() - t < 3000);
+    return out;
+  });
+  expect(result).toEqual([true, true, true, true, true]);
+});
