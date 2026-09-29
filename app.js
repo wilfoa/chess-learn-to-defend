@@ -510,6 +510,7 @@ function canPieceDefendSquare(piece, from, to, color) {
         // Switch turns to the attacking piece's color
         const fenParts = tempGame.fen().split(' ');
         fenParts[1] = color;
+        fenParts[3] = '-'; // an en passant square is invalid once the turn is flipped, and load() would fail
         const testFen = fenParts.join(' ');
         
         tempGame.load(testFen);
