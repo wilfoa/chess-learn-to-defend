@@ -40,10 +40,10 @@ $(document).ready(function() {
     board = Chessboard('board', config);
     updateStatus();
     
-    // Add click handlers to board squares for tap-to-see-threats
-    setTimeout(() => {
-        addSquareClickHandlers();
-    }, 1000);
+    // One delegated handler survives every board redraw (tap-to-move and tap-to-see-threats)
+    $board.on('click', '[data-square]', function() {
+        onSquareClick($(this).attr('data-square'));
+    });
     
     // Event listeners
     $('#resetBtn').on('click', showColorSelectionModal);
@@ -75,7 +75,7 @@ $(document).ready(function() {
 // Check if a piece can be dragged
 function onDragStart(source, piece, position, orientation) {
     // Don't allow moves if game is over
-    if (game.game_over()) return false;
+    if (isGameOver()) return false;
 
     // Threat detector is armed: a tap on a piece should show its threats, so don't start a drag
     if (showThreats) return false;
@@ -133,7 +133,7 @@ function tryMove(source, target) {
     clearSquareThreats();
 
     // Lower levels: ask before a move that leaves a piece to be captured (an even-or-better trade doesn't count)
-    if (LEVELS[difficulty].warnBlunders && !game.game_over()) {
+    if (LEVELS[difficulty].warnBlunders && !isGameOver()) {
         const tradedFairly = move.captured && PIECE_VALUES[move.captured] >= PIECE_VALUES[move.piece];
         const hanging = hangingPieces(me).filter(sq => !(tradedFairly && sq === move.to));
         if (hanging.length) {
@@ -149,7 +149,7 @@ function tryMove(source, target) {
 function afterPlayerMove() {
     // If it's computer's turn, make computer move
     const computerColor = playerColor === 'white' ? 'b' : 'w';
-    if (gameMode === 'computer' && game.turn() === computerColor && !game.game_over()) {
+    if (gameMode === 'computer' && game.turn() === computerColor && !isGameOver()) {
         setTimeout(makeComputerMove, 500); // Small delay for better UX
     }
 }
@@ -180,14 +180,11 @@ function takeBackWarnedMove() {
     updateStatus();
     updateCapturedPieces();
     showAutoHints();
-    setTimeout(() => addSquareClickHandlers(), 100);
 }
 
 // Update board position after the piece snap
 function onSnapEnd() {
     board.position(game.fen());
-    // Re-add click handlers after board update
-    setTimeout(() => addSquareClickHandlers(), 100);
 }
 
 // Undo last move
@@ -199,9 +196,13 @@ function undoMove() {
         updateStatus();
         updateCapturedPieces();
         showAutoHints();
-        // Re-add click handlers after board update
-        setTimeout(() => addSquareClickHandlers(), 100);
     }
+}
+
+// Games end only when nobody can win. Repetition and the 50-move rule are left out on purpose:
+// in real chess a player has to claim them, and for kids they cut games short that are still being played
+function isGameOver() {
+    return game.in_checkmate() || game.in_stalemate() || game.insufficient_material();
 }
 
 // Update game status display
@@ -221,8 +222,11 @@ function updateStatus() {
         status = 'המשחק נגמר! ' + (game.turn() === 'w' ? 'שחור' : 'לבן') + ' ניצח! 🎉';
     }
     // Draw
-    else if (game.in_draw()) {
-        status = 'המשחק נגמר - תיקו! 🤝';
+    else if (game.in_stalemate()) {
+        status = 'פט - תיקו! 🤝 ל' + moveColor + ' אין מהלך חוקי, אבל המלך לא בשח';
+    }
+    else if (game.insufficient_material()) {
+        status = 'תיקו! 🤝 לא נשארו מספיק כלים כדי לתת מט';
     }
     // Check
     else if (game.in_check()) {
@@ -296,7 +300,7 @@ function getPieceSymbol(piece, color) {
 // Computer AI Functions
 function makeComputerMove() {
     const computerColor = playerColor === 'white' ? 'b' : 'w';
-    if (game.game_over() || game.turn() !== computerColor) return;
+    if (isGameOver() || game.turn() !== computerColor) return;
     
     isComputerTurn = true;
     const moves = game.moves({ verbose: true });
@@ -318,8 +322,6 @@ function makeComputerMove() {
         updateCapturedPieces();
         clearSquareThreats();
         showAutoHints();
-        // Re-add click handlers after board update
-        setTimeout(() => addSquareClickHandlers(), 100);
     }
     
     isComputerTurn = false;
@@ -407,28 +409,18 @@ function materialScore(color) {
 }
 
 // Tap-to-see-threats functionality
-function addSquareClickHandlers() {
-    // Add click handlers to all squares - much simpler now since toggle turns off after use
-    for (let file of 'abcdefgh') {
-        for (let rank of '12345678') {
-            const square = file + rank;
-            const $square = $board.find('.square-' + square);
-            
-            $square.off('click').on('click', function(e) {
-                // Tap-to-move: second tap on a destination square
-                if (!showThreats) {
-                    if (!moveFrom || square === moveFrom) return;
-                    const from = moveFrom;
-                    clearSquareThreats();
-                    if (tryMove(from, square)) onSnapEnd();
-                    return;
-                }
-                
-                // Show threats and automatically disable toggle
-                showThreatsToSquare(square);
-            });
-        }
+function onSquareClick(square) {
+    // Tap-to-move: second tap on a destination square
+    if (!showThreats) {
+        if (!moveFrom || square === moveFrom) return;
+        const from = moveFrom;
+        clearSquareThreats();
+        if (tryMove(from, square)) onSnapEnd();
+        return;
     }
+    
+    // Show threats and automatically disable toggle
+    showThreatsToSquare(square);
 }
 
 function showThreatsToSquare(square) {
@@ -663,8 +655,6 @@ function startNewGame(color) {
     updateStatus();
     updateCapturedPieces();
     
-    // Re-add click handlers after board reset
-    setTimeout(() => addSquareClickHandlers(), 100);
     
     // If player chose black, computer makes first move
     if (color === 'black') {
@@ -765,8 +755,6 @@ function loadGame() {
         updateHintInfo();
         showAutoHints();
         
-        // Re-add click handlers
-        setTimeout(() => addSquareClickHandlers(), 100);
         
         alert(`המשחק נטען בהצלחה!\n${savedGame.name}`);
         

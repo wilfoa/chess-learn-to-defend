@@ -1,339 +1,119 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('Chess Threat Visualizer - Basic Loading', () => {
+const pieces = page => page.locator('#board img[src*="chesspieces"]');
+
+async function newGame(page, color = 'white') {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.click('#resetBtn');
+  await page.click(color === 'white' ? '#playWhite' : '#playBlack');
+  await expect(pieces(page)).toHaveCount(32);
+}
+
+async function drag(page, from, to) {
+  const a = await page.locator(`.square-${from}`).boundingBox();
+  const b = await page.locator(`.square-${to}`).boundingBox();
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.up();
+}
+
+test.describe('Basic loading', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
 
-  test('should load the page with Hebrew title', async ({ page }) => {
+  test('shows Hebrew title, heading and subtitle', async ({ page }) => {
     await expect(page).toHaveTitle('גלאי איומים בשחמט לילדים');
+    await expect(page.locator('h1')).toContainText('גלאי איומים בשחמט');
+    await expect(page.locator('.subtitle')).toContainText('למדו לזהות איומים ולהגן על הכלים שלכם');
   });
 
-  test('should display main heading in Hebrew', async ({ page }) => {
-    const heading = page.locator('h1');
-    await expect(heading).toContainText('גלאי איומים בשחמט');
+  test('shows control sections and buttons', async ({ page }) => {
+    for (const heading of ['בקרות משחק', 'תצוגת איומים', 'מצב המשחק', 'רמת המחשב', 'כלים שנלכדו', 'איך להשתמש']) {
+      await expect(page.locator(`h3:has-text("${heading}")`)).toBeVisible();
+    }
+    await expect(page.locator('#resetBtn')).toContainText('משחק חדש');
+    await expect(page.locator('#undoBtn')).toContainText('בטל מהלך');
+    await expect(page.locator('#showThreats')).not.toBeChecked();
+    await expect(page.locator('#currentTurnText')).toContainText('תור הלבן');
+    await expect(page.locator('input[name="difficulty"]')).toHaveCount(4);
   });
 
-  test('should display subtitle in Hebrew', async ({ page }) => {
-    const subtitle = page.locator('.subtitle');
-    await expect(subtitle).toContainText('למדו לזהות איומים ולהגן על הכלים שלכם');
-  });
-
-  test('should load chessboard', async ({ page }) => {
-    const board = page.locator('#board');
-    await expect(board).toBeVisible();
-    
-    // Check that chess pieces are loaded (should have 32 pieces initially)
-    // Wait for board to be fully loaded
-    await page.waitForTimeout(2000);
-    // Chessboard.js uses img elements for pieces
-    const pieces = page.locator('#board img[src*="chesspieces"]');
-    await expect(pieces).toHaveCount(32);
-  });
-
-  test('should display all control sections in Hebrew', async ({ page }) => {
-    // Game Controls section
-    const gameControlsHeading = page.locator('h3:has-text("בקרות משחק")');
-    await expect(gameControlsHeading).toBeVisible();
-
-    // Threat Display section
-    const threatDisplayHeading = page.locator('h3:has-text("תצוגת איומים")');
-    await expect(threatDisplayHeading).toBeVisible();
-
-    // Turn Info section
-    const turnInfoHeading = page.locator('h3:has-text("מידע על התור")');
-    await expect(turnInfoHeading).toBeVisible();
-
-    // Captured Pieces section
-    const capturedPiecesHeading = page.locator('h3:has-text("כלים שנלכדו")');
-    await expect(capturedPiecesHeading).toBeVisible();
-  });
-
-  test('should display control buttons in Hebrew', async ({ page }) => {
-    const newGameBtn = page.locator('#resetBtn');
-    await expect(newGameBtn).toContainText('משחק חדש');
-    
-    const undoBtn = page.locator('#undoBtn');
-    await expect(undoBtn).toContainText('בטל מהלך');
-    
-    const flipBtn = page.locator('#flipBtn');
-    await expect(flipBtn).toContainText('הפוך לוח');
-  });
-
-  test('should display threat toggle in Hebrew', async ({ page }) => {
-    const threatToggleLabel = page.locator('.label-text');
-    await expect(threatToggleLabel).toContainText('הצג איומים');
-    
-    // Check toggle is on by default
-    const threatToggle = page.locator('#showThreats');
-    await expect(threatToggle).toBeChecked();
-  });
-
-  test('should display threat mode options in Hebrew', async ({ page }) => {
-    const currentPlayerOption = page.locator('label:has-text("הצג איומים על השחקן הנוכחי")');
-    await expect(currentPlayerOption).toBeVisible();
-    
-    const allThreatsOption = page.locator('label:has-text("הצג את כל האיומים")');
-    await expect(allThreatsOption).toBeVisible();
-  });
-
-  test('should display turn indicator in Hebrew', async ({ page }) => {
-    const turnIndicator = page.locator('#currentTurn');
-    await expect(turnIndicator).toContainText('תור הלבן');
-  });
-
-  test('should display instructions panel in Hebrew', async ({ page }) => {
-    const instructionsHeading = page.locator('h3:has-text("איך להשתמש")');
-    await expect(instructionsHeading).toBeVisible();
-    
-    const instructions = page.locator('.info-panel ul li');
-    await expect(instructions).toHaveCount(4);
-    
-    // Check first instruction about red highlights
-    const firstInstruction = instructions.first();
-    await expect(firstInstruction).toContainText('הדגשות אדומות מראות כלים שנמצאים תחת איום');
+  test('new game sets up 32 pieces, and playing black flips the board', async ({ page }) => {
+    await newGame(page, 'black');
+    const whitePawn = await page.locator('.square-e2').boundingBox();
+    const blackPawn = await page.locator('.square-e7').boundingBox();
+    expect(whitePawn.y).toBeLessThan(blackPawn.y); // white is at the top
   });
 });
 
-test.describe('Chess Threat Visualizer - Interactions', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+test.describe('Game logic', () => {
+  test('a legal move is played and the computer replies', async ({ page }) => {
+    await newGame(page);
+    await drag(page, 'e2', 'e4');
+    await expect(page.locator('.square-e4 img[data-piece="wP"]')).toHaveCount(1);
+    await expect.poll(() => page.evaluate(() => game.history().length)).toBe(2);
+    await expect(page.locator('#currentTurnText')).toContainText('תור הלבן');
   });
 
-  test('should reset the game when clicking new game button', async ({ page }) => {
-    // Make a move first
-    await page.waitForTimeout(2000);
-    // Find the white pawn at e2 and drag it to e4
-    const e2Square = await page.locator('.square-e2').boundingBox();
-    const e4Square = await page.locator('.square-e4').boundingBox();
-    await page.mouse.move(e2Square.x + e2Square.width/2, e2Square.y + e2Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(e4Square.x + e4Square.width/2, e4Square.y + e4Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // Reset the game
-    await page.click('#resetBtn');
-    await page.waitForTimeout(1000);
-    
-    // Check that pieces are back to starting position
-    const pieces = page.locator('#board img[src*="chesspieces"]');
-    await expect(pieces).toHaveCount(32);
+  test('an illegal move snaps back', async ({ page }) => {
+    await newGame(page);
+    await drag(page, 'e2', 'e5');
+    await expect(page.locator('.square-e2 img[data-piece="wP"]')).toHaveCount(1);
+    await expect(page.locator('.square-e5 img')).toHaveCount(0);
+    expect(await page.evaluate(() => game.history().length)).toBe(0);
   });
 
-  test('should flip the board when clicking flip button', async ({ page }) => {
-    await page.waitForTimeout(2000);
-    // Check initial position of a specific piece
-    const whitePawnE2Before = await page.locator('#board img[src*="wP"]').first().boundingBox();
-    
-    // Flip the board
-    await page.click('#flipBtn');
-    await page.waitForTimeout(1000);
-    
-    // Check position after flip
-    const whitePawnE2After = await page.locator('#board img[src*="wP"]').first().boundingBox();
-    
-    // The y positions should be different (flipped vertically)
-    expect(whitePawnE2Before.y).not.toEqual(whitePawnE2After.y);
-  });
-
-  test('should toggle threat display', async ({ page }) => {
-    // Initially threats should be visible
-    const threatToggle = page.locator('#showThreats');
-    await expect(threatToggle).toBeChecked();
-    
-    // Turn off threats
-    await threatToggle.uncheck();
-    await expect(threatToggle).not.toBeChecked();
-    
-    // Turn on threats again
-    await threatToggle.check();
-    await expect(threatToggle).toBeChecked();
-  });
-
-  test('should switch between threat modes', async ({ page }) => {
-    // Default should be current player mode
-    const currentMode = page.locator('input[name="threatMode"][value="current"]');
-    await expect(currentMode).toBeChecked();
-    
-    // Switch to all threats mode
-    const allMode = page.locator('input[name="threatMode"][value="all"]');
-    await allMode.check();
-    await expect(allMode).toBeChecked();
-    await expect(currentMode).not.toBeChecked();
-  });
-});
-
-test.describe('Chess Threat Visualizer - Game Logic', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-  });
-
-  test('should allow legal moves', async ({ page }) => {
-    // Move white pawn e2 to e4
-    await page.waitForTimeout(2000);
-    const e2Square = await page.locator('.square-e2').boundingBox();
-    const e4Square = await page.locator('.square-e4').boundingBox();
-    await page.mouse.move(e2Square.x + e2Square.width/2, e2Square.y + e2Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(e4Square.x + e4Square.width/2, e4Square.y + e4Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // Check turn changed to black
-    const turnIndicator = page.locator('#currentTurn');
-    await expect(turnIndicator).toContainText('תור השחור');
-    
-    // Move black pawn e7 to e5
-    const e7Square = await page.locator('.square-e7').boundingBox();
-    const e5Square = await page.locator('.square-e5').boundingBox();
-    await page.mouse.move(e7Square.x + e7Square.width/2, e7Square.y + e7Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(e5Square.x + e5Square.width/2, e5Square.y + e5Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // Check turn changed back to white
-    await expect(turnIndicator).toContainText('תור הלבן');
-  });
-
-  test('should not allow illegal moves', async ({ page }) => {
-    // Try to move white pawn e2 to e5 (illegal)
-    await page.waitForTimeout(2000);
-    const e2Square = await page.locator('.square-e2').boundingBox();
-    const e5Square = await page.locator('.square-e5').boundingBox();
-    await page.mouse.move(e2Square.x + e2Square.width/2, e2Square.y + e2Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(e5Square.x + e5Square.width/2, e5Square.y + e5Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // Turn should still be white's
-    const turnIndicator = page.locator('#currentTurn');
-    await expect(turnIndicator).toContainText('תור הלבן');
-    
-    // Pawn should still be on e2 (check that a white pawn image is at e2 position)
-    const e2Sq = page.locator('.square-e2');
-    await expect(e2Sq).toBeVisible();
-  });
-
-  test('should undo moves', async ({ page }) => {
-    // Make a move
-    await page.waitForTimeout(2000);
-    const e2Square = await page.locator('.square-e2').boundingBox();
-    const e4Square = await page.locator('.square-e4').boundingBox();
-    await page.mouse.move(e2Square.x + e2Square.width/2, e2Square.y + e2Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(e4Square.x + e4Square.width/2, e4Square.y + e4Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // Check turn changed
-    let turnIndicator = page.locator('#currentTurn');
-    await expect(turnIndicator).toContainText('תור השחור');
-    
-    // Undo the move
+  test('undo takes back the move and the computer reply', async ({ page }) => {
+    await newGame(page);
+    await drag(page, 'e2', 'e4');
+    await expect.poll(() => page.evaluate(() => game.history().length)).toBe(2);
     await page.click('#undoBtn');
-    await page.waitForTimeout(500);
-    
-    // Check turn is back to white
-    await expect(turnIndicator).toContainText('תור הלבן');
-    
-    // Check pawn is back on e2
-    const e2Sq = page.locator('.square-e2');
-    await expect(e2Sq).toBeVisible();
+    await expect(page.locator('.square-e2 img[data-piece="wP"]')).toHaveCount(1);
+    await expect(page.locator('#currentTurnText')).toContainText('תור הלבן');
   });
 
-  test('should display check warning', async ({ page }) => {
-    // Set up a simple check position
-    await page.waitForTimeout(2000);
-    
-    // Helper function to move pieces
-    const movePiece = async (from, to) => {
-      const fromSquare = await page.locator(`.square-${from}`).boundingBox();
-      const toSquare = await page.locator(`.square-${to}`).boundingBox();
-      await page.mouse.move(fromSquare.x + fromSquare.width/2, fromSquare.y + fromSquare.height/2);
-      await page.mouse.down();
-      await page.mouse.move(toSquare.x + toSquare.width/2, toSquare.y + toSquare.height/2);
-      await page.mouse.up();
-      await page.waitForTimeout(300);
-    };
-    
-    // Simple moves to create check
-    await movePiece('e2', 'e4');
-    await movePiece('e7', 'e5');
-    await movePiece('d1', 'h5'); // Queen to h5
-    
-    // Check for check warning (black is now in check)
-    const status = page.locator('#gameStatus');
-    const statusText = await status.textContent();
-    // Should contain check warning since black king is threatened
-    expect(statusText).toContain('בשח');
+  test('shows a check warning', async ({ page }) => {
+    await newGame(page);
+    await page.evaluate(() => {
+      game.load('4k3/8/8/8/8/8/2n5/K6R w - - 0 1');
+      updateStatus();
+    });
+    await expect(page.locator('#gameStatus')).toContainText('בשח');
+  });
+
+  test('50-move rule does not end the game, bare kings do', async ({ page }) => {
+    await newGame(page);
+    const fiftyMoves = await page.evaluate(() => {
+      game.load('4k3/8/8/8/8/8/8/R3K3 w - - 100 80');
+      updateStatus();
+      return isGameOver();
+    });
+    expect(fiftyMoves).toBe(false);
+    await expect(page.locator('#gameStatus')).not.toContainText('תיקו');
+    await page.evaluate(() => { game.load('4k3/8/8/8/8/8/8/4K3 w - - 0 1'); updateStatus(); });
+    await expect(page.locator('#gameStatus')).toContainText('לא נשארו מספיק כלים');
   });
 });
 
-test.describe('Chess Threat Visualizer - Threat Detection', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+test.describe('Threat detector', () => {
+  test('tapping a square shows its attackers, then the toggle turns itself off', async ({ page }) => {
+    await newGame(page);
+    await page.locator('#showThreats').check({ force: true });
+    await page.click('.square-f6'); // black: g8 knight, e7 and g7 pawns
+    await expect(page.locator('.square-attacker')).toHaveCount(3);
+    await expect(page.locator('#showThreats')).not.toBeChecked();
   });
 
-  test('should show threat indicators when pieces are threatened', async ({ page }) => {
-    // Move white pawn to create a threat
-    await page.waitForTimeout(2000);
-    const e2Square = await page.locator('.square-e2').boundingBox();
-    const e4Square = await page.locator('.square-e4').boundingBox();
-    await page.mouse.move(e2Square.x + e2Square.width/2, e2Square.y + e2Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(e4Square.x + e4Square.width/2, e4Square.y + e4Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // Move black pawn
-    const d7Square = await page.locator('.square-d7').boundingBox();
-    const d5Square = await page.locator('.square-d5').boundingBox();
-    await page.mouse.move(d7Square.x + d7Square.width/2, d7Square.y + d7Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(d5Square.x + d5Square.width/2, d5Square.y + d5Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // White pawn can now capture black pawn - threat should be visible
-    // Check for threat indicators (they have the class 'threat-indicator')
-    const threatIndicators = page.locator('.threat-indicator');
-    
-    // There should be at least one threat indicator visible
-    await expect(threatIndicators.first()).toBeVisible({ timeout: 2000 });
-  });
-
-  test('should hide threat indicators when toggle is off', async ({ page }) => {
-    // Create a position with threats
-    await page.waitForTimeout(2000);
-    const e2Square = await page.locator('.square-e2').boundingBox();
-    const e4Square = await page.locator('.square-e4').boundingBox();
-    await page.mouse.move(e2Square.x + e2Square.width/2, e2Square.y + e2Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(e4Square.x + e4Square.width/2, e4Square.y + e4Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    const d7Square = await page.locator('.square-d7').boundingBox();
-    const d5Square = await page.locator('.square-d5').boundingBox();
-    await page.mouse.move(d7Square.x + d7Square.width/2, d7Square.y + d7Square.height/2);
-    await page.mouse.down();
-    await page.mouse.move(d5Square.x + d5Square.width/2, d5Square.y + d5Square.height/2);
-    await page.mouse.up();
-    await page.waitForTimeout(500);
-    
-    // Turn off threat display
-    await page.locator('#showThreats').uncheck();
-    await page.waitForTimeout(500);
-    
-    // Check that no threat indicators are visible
-    const threatIndicators = page.locator('.threat-indicator');
-    await expect(threatIndicators).toHaveCount(0);
+  test('turning the toggle off clears the highlights', async ({ page }) => {
+    await newGame(page);
+    await page.locator('#showThreats').check({ force: true });
+    await page.click('.square-f6');
+    await page.locator('#showThreats').check({ force: true });
+    await page.locator('#showThreats').uncheck({ force: true });
+    await expect(page.locator('.square-highlight')).toHaveCount(0);
   });
 });
 

@@ -25,10 +25,10 @@ test('Chess app loads without errors', async ({ page }) => {
   const board = page.locator('#board');
   await expect(board).toBeVisible();
   
-  // Check that chess pieces are loaded
-  await page.waitForTimeout(1000);
-  const pieces = page.locator('#board img[src*="chesspieces"]');
-  await expect(pieces).toHaveCount(32);
+  // Board starts empty until a color is picked; starting a game places all pieces
+  await page.click('#resetBtn');
+  await page.click('#playWhite');
+  await expect(page.locator('#board img[src*="chesspieces"]')).toHaveCount(32);
   
   console.log('✅ App loaded successfully with no errors!');
 });
