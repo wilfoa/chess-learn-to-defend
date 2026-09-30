@@ -20,7 +20,7 @@ Runtime libraries load from CDNs: jQuery 3.6, chess.js 0.10.3, chessboard.js 1.0
 ```bash
 npm install
 npm run serve     # http-server on :8080 (Playwright starts this itself)
-npm test          # all 4 browser projects; use --project=chromium for a quick run
+npm test          # chromium/webkit/chrome locally, then Firefox in Docker (Docker must be running)
 npm run build     # regenerate chess-game-standalone.html
 ```
 
