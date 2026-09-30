@@ -1,4 +1,4 @@
-# Chess Threat Detective - Makefile
+# On Guard! - Makefile
 
 .PHONY: build test serve clean help
 
@@ -29,7 +29,7 @@ clean:
 
 # Show help
 help:
-	@echo "Chess Threat Detective - Available commands:"
+	@echo "On Guard! - Available commands:"
 	@echo ""
 	@echo "  make build     - Build standalone HTML file"
 	@echo "  make test      - Run automated tests"

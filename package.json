@@ -1,5 +1,5 @@
 {
-  "name": "chess-threat-visualizer",
+  "name": "on-guard",
   "version": "1.0.0",
   "description": "Chess threat visualizer for kids - helps learn to identify and protect against threats",
   "main": "index.html",
@@ -19,7 +19,7 @@
     "visualization"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "http-server": "^14.1.1"

@@ -1,148 +1,53 @@
-# 🛡️ על המשמר! - On Guard! Chess for Kids
+# 🛡️ על המשמר! · On Guard!
 
-משחק שחמט אינטראקטיבי לילדים ללמידת זיהוי איומים והגנה על כלי שחמט.
+**שחמט לילדים: למדו לזהות איומים ולהגן על הכלים שלכם.**
+Chess for kids: learn to spot threats and protect your pieces.
 
-## 🚀 איך להריץ את המשחק
+▶️ **Play:** https://wilfoa.github.io/on-guard/
 
-### אופציה 1: קובץ יחיד (הכי קל!)
-1. פתחו את הקובץ `chess-game-standalone.html` בדפדפן כלשהו
-2. זהו! המשחק יעבוד מיד
+The app works in Hebrew (the default, right-to-left) and English. Use the עב / EN switch to change the language.
 
-### אופציה 2: קבצים נפרדים
-1. פתחו את הקובץ `index.html` בדפדפן
-2. ודאו שיש חיבור לאינטרנט (להורדת ספריות)
+## What it teaches
 
-## 🛠️ עבור מפתחים
+- **Who's attacking? / מי מאיים?** Tap the button, then tap any square to see which enemy pieces attack it. The more attackers there are, the thicker the red frame. The hint turns itself off after each use.
+- **My pieces in danger / הכלים שלי בסכנה**: briefly marks every one of your pieces that is under attack.
+- **Blunder warning**: on Beginner and Attacker, the computer asks before you play a move that leaves a piece hanging.
+- **Check marker**: when your king is in check, it is marked in red.
 
-### בניית הקובץ העצמאי
-הפרויקט כולל מערכת בנייה אוטומטית שיוצרת את הקובץ העצמאי:
+### Levels
+
+| Level | Computer behaviour |
+|---|---|
+| Beginner · מתחיל | Takes pieces you leave unprotected and sometimes leaves its own pieces hanging. Your pieces in danger are marked automatically. |
+| Attacker · תוקף | Looks for ways to attack your pieces and blunders less often. |
+| Medium · בינוני | Searches 2 plies ahead and doesn't give pieces away. |
+| Hard · קשה | Searches 3 plies ahead and looks for forks. |
+
+An optional **Limit hints by level** switch sets how many hints you get per game: unlimited on Beginner and Attacker, 3 on Medium, none on Hard.
+
+You can also undo moves, save up to 20 games under a name, load a saved game from a list, and see which pieces each side has captured. Saves and settings stay in the browser (`localStorage`).
+
+## Running locally
+
+Open `index.html` in a browser, or open `chess-game-standalone.html`, a single-file build you can share. Both need an internet connection, because jQuery, chess.js, chessboard.js and the font load from CDNs.
+
+## Development
+
+No framework and no bundler: `index.html` + `styles.css` + `app.js`.
 
 ```bash
-# עם npm
-npm run build
-
-# עם Make
-make build
-
-# בנייה ישירה
-node build-standalone.js
+npm install
+npm run serve        # http://127.0.0.1:8080
+npm test             # Playwright: chromium, firefox, webkit, and installed Chrome
+npm run build        # regenerate chess-game-standalone.html
 ```
 
-### Pre-commit Hook
-המערכת מגיעה עם pre-commit hook שמעדכן אוטומטית את הקובץ העצמאי:
-- כאשר משנים `index.html`, `styles.css`, או `app.js`
-- הקובץ `chess-game-standalone.html` מעודכן אוטומטית
-- שינויים נוספים לקומיט באופן אוטומטי
+`make build | test | test-ui | serve | clean` wraps the same commands.
 
-### בדיקות
-```bash
-# הרצת בדיקות
-npm test
+After you change `index.html`, `styles.css` or `app.js`, run `npm run build` and commit the regenerated `chess-game-standalone.html` together with your change.
 
-# בדיקות עם ממשק גרפי
-npm run test:ui
+CI runs the Playwright suite on every push to `main` and on every pull request. GitHub Pages serves `main` directly.
 
-# עם Make
-make test
-make test-ui
-```
+## License
 
-### שרת פיתוח
-```bash
-# הפעלת שרת מקומי
-npm run serve
-
-# עם Make
-make serve
-```
-
-## 🎮 איך לשחק
-
-### התחלת משחק
-1. לחצו על כפתור "🔄 משחק חדש"
-2. בחרו באיזה צבע תרצו לשחק:
-   - **♔ לבן** - אתם מתחילים ראשונים
-   - **♚ שחור** - המחשב מתחיל ראשון
-
-### מהלכי המשחק
-- **גררו כלים** עם העכבר כדי לבצע מהלכים
-- **תור הלבן/שחור** מוצג בצד העליון
-- המחשב יגיב אוטומטית למהלך שלכם
-
-### זיהוי איומים - הכלי הלימודי העיקרי! 🔍
-1. **הפעילו** את המתג "הפעל רמז איומים"
-2. **לחצו** על כל ריבוע בלוח השחמט
-3. המשחק יראה לכם:
-   - **גבול כחול** = הריבוע לא מאוים
-   - **גבול אדום** = הריבוע מאוים! (עובי הגבול = כמות האיומים)
-   - **כלים מסומנים בכתום** = הכלים שמאיימים על הריבוע
-
-> 💡 **טיפ**: הרמז נכבה אוטומטית אחרי שימוש - זה מעודד אתכם לחשוב!
-
-### רמות קושי
-- 🟢 **קל** - המחשב עושה מהלכים אקראיים
-- 🟡 **בינוני** - המחשב מחפש לכבוש כלים ולעשות שח
-- 🔴 **קשה** - המחשב מנסה לנצח!
-
-### פקדים נוספים
-- **↩️ בטל מהלך** - לביטול המהלך האחרון
-- **💾 שמור משחק** - שמירת המשחק הנוכחי (עד 10 משחקים שמורים)
-- **📁 טען משחק** - טעינת משחק שמור מהרשימה
-- **כלים שנלכדו** - רואים מה נכבש בכל צד
-
-### שמירה וטעינה של משחקים 💾
-- **שמירה**: לחצו על "💾 שמור משחק" בכל נקודה במהלך המשחק
-- **טעינה**: לחצו על "📁 טען משחק" ובחרו משחק מהרשימה
-- המערכת שומרת אוטומטית את המיקום, הצבע שלכם, ורמת הקושי
-- ניתן לשמור עד 10 משחקים (המערכת מוחקת את הישנים ביותר)
-
-## 🎓 מה לומדים במשחק הזה?
-
-### מיומנויות שחמט בסיסיות
-- **זיהוי איומים** - איזה כלים מאיימים על הריבועים
-- **הגנה על כלים** - איך להימנע מלאבד כלים
-- **תכנון מהלכים** - חשיבה קדימה לפני המהלך
-
-### איך להשתמש בכלי האיומים
-1. לפני כל מהלך, בדקו אם הכלי שלכם מאוים
-2. בדקו אם המהלך שלכם יחשוף איומים חדשים
-3. חפשו הזדמנויות לאיים על כלים של היריב
-
-## 📱 דרישות מערכת
-
-- דפדפן מודרני (Chrome, Firefox, Safari, Edge)
-- חיבור לאינטרנט (לטעינת ספריות השחמט)
-- לא נדרשת התקנה!
-
-## 🔧 פתרון בעיות
-
-### המשחק לא נטען
-- ודאו שיש חיבור לאינטרנט
-- נסו לרענן את הדף (F5)
-- בדקו שהדפדפן מעודכן
-
-### הכלים לא זוזים
-- ודאו שזה התור שלכם (לא התור של המחשב)
-- בדקו שלא ניסיתם לזוז עם הכלים של היריב
-- ודאו שהמהלך חוקי בשחמט
-
-### רמזי האיומים לא עובדים
-- ודאו שהפעלתם את המתג "הפעל רמז איומים"
-- לחצו על ריבוע בלוח (לא על כלי)
-- זכרו - הרמז נכבה אחרי שימוש אחד
-
-## 🎯 טיפים למתחילים
-
-### למי שלא יודע שחמט
-- כל כלי זז בצורה שונה - למדו איך כל כלי מאיים
-- השתמשו ברמזי האיומים כדי ללמוד דפוסי תנועה
-- התחילו ברמה קלה ועלו בהדרגה
-
-### למי שיודע שחמט בסיסי
-- השתמשו במשחק כדי להשתפר בזיהוי איומים מהיר
-- נסו לחזות מהלכי מחשב ברמה קשה
-- התמקדו בהגנה על הכלים החשובים
-
----
-
-**תהנו מהמשחק ובהצלחה בלימוד השחמט! 🏆**
+GPL-3.0. See [LICENSE](LICENSE).
