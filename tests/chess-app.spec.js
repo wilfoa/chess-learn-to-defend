@@ -307,11 +307,15 @@ test.describe('Teaching levels', () => {
     await expect(page.locator('#showThreats')).toBeEnabled();
   });
 
-  test('"my pieces in danger" briefly marks every attacked piece', async ({ page }) => {
+  test('"my pieces in danger" marks attacked pieces only when pressed, and briefly', async ({ page }) => {
     await page.evaluate(() => {
+      difficulty = 'beginner';
       game.load('4k3/8/8/8/8/q1N5/8/R3K3 w - - 0 1'); // black queen hits the knight and the rook
       board.position(game.fen(), false);
+      clearSquareThreats();
+      showAutoHints();
     });
+    await expect(page.locator('.threatened-square')).toHaveCount(0);
     await page.click('#showDanger');
     await expect(page.locator('.danger-flash')).toHaveCount(2);
     await expect(page.locator('.danger-flash')).toHaveCount(0, { timeout: 4000 });

@@ -13,12 +13,12 @@ try { limitHints = localStorage.getItem('limitHints') === '1'; } catch (e) {}
 
 // What each level teaches. depth: search depth (none = teaching moves);
 // blunder: chance the computer leaves one of its pieces hanging on purpose;
-// autoHints: mark the child's hanging pieces automatically; warnBlunders: ask before a move that hangs a piece
+// warnBlunders: ask before a move that hangs a piece
 const LEVELS = {
-    beginner: { blunder: 0.3,  autoHints: true,  hintLimit: Infinity, warnBlunders: true },
-    attacker: { blunder: 0.15, autoHints: false, hintLimit: Infinity, warnBlunders: true },
-    medium:   { depth: 2, blunder: 0, autoHints: false, hintLimit: 3, warnBlunders: false },
-    hard:     { depth: 3, blunder: 0, autoHints: false, hintLimit: 0, warnBlunders: false }
+    beginner: { blunder: 0.3,  hintLimit: Infinity, warnBlunders: true },
+    attacker: { blunder: 0.15, hintLimit: Infinity, warnBlunders: true },
+    medium:   { depth: 2, blunder: 0, hintLimit: 3, warnBlunders: false },
+    hard:     { depth: 3, blunder: 0, hintLimit: 0, warnBlunders: false }
 };
 const PIECE_VALUES = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
 
@@ -44,7 +44,7 @@ const STRINGS = {
         level_attacker: 'תוקף',
         level_medium: 'בינוני',
         level_hard: 'קשה',
-        caption_beginner: 'המחשב אוכל כלים שנשארו בלי הגנה. כלים שלכם בסכנה מסומנים, והמחשב מזהיר לפני טעות.',
+        caption_beginner: 'המחשב אוכל כלים שנשארו בלי הגנה. והמחשב מזהיר לפני טעות.',
         caption_attacker: 'המחשב מחפש לתקוף את הכלים שלכם, ומזהיר לפני טעות.',
         caption_medium: 'המחשב חושב מהלך קדימה ולא נותן כלים בחינם.',
         caption_hard: 'המחשב חושב שני מהלכים קדימה ומחפש מזלגות.',
@@ -80,7 +80,6 @@ const STRINGS = {
         hintInfoNone: 'ברמה קשה אין רמזים - בדקו לבד! 💪',
         hintInfoLeft: 'נשארו {n} רמזים במשחק הזה. לחצו "מי מאיים?" ואז על ריבוע.',
         hintInfoOut: 'נגמרו הרמזים למשחק הזה 💪',
-        hintInfoBeginner: ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.',
         hintsLeft: 'נשארו {n}',
         noGameToSave: 'אין עדיין משחק לשמירה - התחילו משחק חדש!',
         saveTitle: 'שמירת משחק',
@@ -117,7 +116,7 @@ const STRINGS = {
         level_attacker: 'Attacker',
         level_medium: 'Medium',
         level_hard: 'Hard',
-        caption_beginner: 'The computer takes pieces you leave unprotected. Your pieces in danger are marked, and it warns you before a mistake.',
+        caption_beginner: 'The computer takes pieces you leave unprotected, and warns you before a mistake.',
         caption_attacker: 'The computer looks for ways to attack your pieces, and warns you before a mistake.',
         caption_medium: 'The computer thinks one move ahead and never gives pieces away.',
         caption_hard: 'The computer thinks two moves ahead and looks for forks.',
@@ -153,7 +152,6 @@ const STRINGS = {
         hintInfoNone: 'No hints on Hard - check for yourself! 💪',
         hintInfoLeft: '{n} hints left this game. Tap "Who\'s attacking?" and then a square.',
         hintInfoOut: 'No hints left this game 💪',
-        hintInfoBeginner: ' On Beginner, your pieces in danger are marked in red.',
         hintsLeft: '{n} left',
         noGameToSave: 'Nothing to save yet - start a new game first!',
         saveTitle: 'Save game',
@@ -688,16 +686,11 @@ function hangingValue(color) {
     return hangingPieces(color).reduce((sum, sq) => sum + PIECE_VALUES[game.get(sq).type], 0);
 }
 
-// Marks that stay on the board while it's the child's turn: their king in check (all levels),
-// and on Beginner their pieces in danger
+// The mark that stays on the board while it's the child's turn: their king in check.
+// Pieces in danger are shown only on request ("My pieces in danger")
 function showAutoHints() {
-    const me = playerColor === 'white' ? 'w' : 'b';
-    if (game.turn() !== me) return;
+    if (game.turn() !== (playerColor === 'white' ? 'w' : 'b')) return;
     showCheckMark();
-    if (LEVELS[difficulty].autoHints) {
-        const enemy = me === 'w' ? 'b' : 'w';
-        hangingPieces(me).forEach(sq => addSquareHighlight(sq, 'threatened-square', attackersOf(sq, enemy).length));
-    }
 }
 
 function showCheckMark() {
@@ -719,7 +712,6 @@ function updateHintInfo() {
     else if (limit === 0) text = t('hintInfoNone');
     else if (left > 0) text = t('hintInfoLeft', { n: left });
     else text = t('hintInfoOut');
-    if (level.autoHints) text += t('hintInfoBeginner');
     $('#hintInfo').text(text);
     $('#levelCaption').text(t('caption_' + difficulty));
 }

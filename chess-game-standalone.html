@@ -235,16 +235,34 @@ svg {
     flex-grow: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     padding: 14px 16px;
+    border: none;
     border-radius: 18px;
+    color: #fff;
     font-size: 17px;
     font-weight: 700;
-    transition: transform 0.15s ease;
+    cursor: pointer;
+    /* Raised edge underneath, so it reads as something to press */
+    box-shadow: 0 4px 0 var(--edge);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
 }
 
-.hint-btn:active {
-    transform: scale(0.98);
+.hint-btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+/* Pressed, or "Who's attacking?" armed and waiting for a square: sunk in */
+.hint-btn:active:not(:disabled),
+.hint-btn[aria-pressed="true"] {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 var(--edge);
+}
+
+.hint-btn:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
 }
 
 .hint-btn:disabled {
@@ -253,20 +271,18 @@ svg {
 }
 
 .hint-threats {
-    border: 2px solid var(--orange);
-    background: var(--orange-soft);
-    color: var(--orange-ink);
+    --edge: #A33A0B;
+    background: #D9480F;
 }
 
 .hint-threats[aria-pressed="true"] {
-    background: var(--orange);
-    color: #fff;
+    background: #B83D0C;
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .hint-danger {
-    border: 2px solid #E8A3A3;
-    background: var(--red-soft);
-    color: var(--red);
+    --edge: #8F1D1D;
+    background: var(--red);
 }
 
 .hint-count {
@@ -967,12 +983,12 @@ try { limitHints = localStorage.getItem('limitHints') === '1'; } catch (e) {}
 
 // What each level teaches. depth: search depth (none = teaching moves);
 // blunder: chance the computer leaves one of its pieces hanging on purpose;
-// autoHints: mark the child's hanging pieces automatically; warnBlunders: ask before a move that hangs a piece
+// warnBlunders: ask before a move that hangs a piece
 const LEVELS = {
-    beginner: { blunder: 0.3,  autoHints: true,  hintLimit: Infinity, warnBlunders: true },
-    attacker: { blunder: 0.15, autoHints: false, hintLimit: Infinity, warnBlunders: true },
-    medium:   { depth: 2, blunder: 0, autoHints: false, hintLimit: 3, warnBlunders: false },
-    hard:     { depth: 3, blunder: 0, autoHints: false, hintLimit: 0, warnBlunders: false }
+    beginner: { blunder: 0.3,  hintLimit: Infinity, warnBlunders: true },
+    attacker: { blunder: 0.15, hintLimit: Infinity, warnBlunders: true },
+    medium:   { depth: 2, blunder: 0, hintLimit: 3, warnBlunders: false },
+    hard:     { depth: 3, blunder: 0, hintLimit: 0, warnBlunders: false }
 };
 const PIECE_VALUES = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 0 };
 
@@ -998,7 +1014,7 @@ const STRINGS = {
         level_attacker: 'תוקף',
         level_medium: 'בינוני',
         level_hard: 'קשה',
-        caption_beginner: 'המחשב אוכל כלים שנשארו בלי הגנה. כלים שלכם בסכנה מסומנים, והמחשב מזהיר לפני טעות.',
+        caption_beginner: 'המחשב אוכל כלים שנשארו בלי הגנה. והמחשב מזהיר לפני טעות.',
         caption_attacker: 'המחשב מחפש לתקוף את הכלים שלכם, ומזהיר לפני טעות.',
         caption_medium: 'המחשב חושב מהלך קדימה ולא נותן כלים בחינם.',
         caption_hard: 'המחשב חושב שני מהלכים קדימה ומחפש מזלגות.',
@@ -1034,7 +1050,6 @@ const STRINGS = {
         hintInfoNone: 'ברמה קשה אין רמזים - בדקו לבד! 💪',
         hintInfoLeft: 'נשארו {n} רמזים במשחק הזה. לחצו "מי מאיים?" ואז על ריבוע.',
         hintInfoOut: 'נגמרו הרמזים למשחק הזה 💪',
-        hintInfoBeginner: ' ברמת מתחיל כלים שלכם בסכנה מסומנים באדום.',
         hintsLeft: 'נשארו {n}',
         noGameToSave: 'אין עדיין משחק לשמירה - התחילו משחק חדש!',
         saveTitle: 'שמירת משחק',
@@ -1071,7 +1086,7 @@ const STRINGS = {
         level_attacker: 'Attacker',
         level_medium: 'Medium',
         level_hard: 'Hard',
-        caption_beginner: 'The computer takes pieces you leave unprotected. Your pieces in danger are marked, and it warns you before a mistake.',
+        caption_beginner: 'The computer takes pieces you leave unprotected, and warns you before a mistake.',
         caption_attacker: 'The computer looks for ways to attack your pieces, and warns you before a mistake.',
         caption_medium: 'The computer thinks one move ahead and never gives pieces away.',
         caption_hard: 'The computer thinks two moves ahead and looks for forks.',
@@ -1107,7 +1122,6 @@ const STRINGS = {
         hintInfoNone: 'No hints on Hard - check for yourself! 💪',
         hintInfoLeft: '{n} hints left this game. Tap "Who\'s attacking?" and then a square.',
         hintInfoOut: 'No hints left this game 💪',
-        hintInfoBeginner: ' On Beginner, your pieces in danger are marked in red.',
         hintsLeft: '{n} left',
         noGameToSave: 'Nothing to save yet - start a new game first!',
         saveTitle: 'Save game',
@@ -1642,16 +1656,11 @@ function hangingValue(color) {
     return hangingPieces(color).reduce((sum, sq) => sum + PIECE_VALUES[game.get(sq).type], 0);
 }
 
-// Marks that stay on the board while it's the child's turn: their king in check (all levels),
-// and on Beginner their pieces in danger
+// The mark that stays on the board while it's the child's turn: their king in check.
+// Pieces in danger are shown only on request ("My pieces in danger")
 function showAutoHints() {
-    const me = playerColor === 'white' ? 'w' : 'b';
-    if (game.turn() !== me) return;
+    if (game.turn() !== (playerColor === 'white' ? 'w' : 'b')) return;
     showCheckMark();
-    if (LEVELS[difficulty].autoHints) {
-        const enemy = me === 'w' ? 'b' : 'w';
-        hangingPieces(me).forEach(sq => addSquareHighlight(sq, 'threatened-square', attackersOf(sq, enemy).length));
-    }
 }
 
 function showCheckMark() {
@@ -1673,7 +1682,6 @@ function updateHintInfo() {
     else if (limit === 0) text = t('hintInfoNone');
     else if (left > 0) text = t('hintInfoLeft', { n: left });
     else text = t('hintInfoOut');
-    if (level.autoHints) text += t('hintInfoBeginner');
     $('#hintInfo').text(text);
     $('#levelCaption').text(t('caption_' + difficulty));
 }

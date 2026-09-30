@@ -18,7 +18,7 @@ The app works in Hebrew (the default, right-to-left) and English. Use the עב /
 
 | Level | Computer behaviour |
 |---|---|
-| Beginner · מתחיל | Takes pieces you leave unprotected and sometimes leaves its own pieces hanging. Your pieces in danger are marked automatically. |
+| Beginner · מתחיל | Takes pieces you leave unprotected and sometimes leaves its own pieces hanging. |
 | Attacker · תוקף | Looks for ways to attack your pieces and blunders less often. |
 | Medium · בינוני | Searches 2 plies ahead and doesn't give pieces away. |
 | Hard · קשה | Searches 3 plies ahead and looks for forks. |
