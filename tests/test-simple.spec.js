@@ -19,9 +19,11 @@ test('Chess app loads without errors', async ({ page, baseURL }) => {
   await page.waitForTimeout(2000); // let late script errors surface
 
   // Board starts empty until a color is picked; starting a game places all pieces
+  await expect(page.locator('#showThreats')).toBeDisabled(); // nothing to attack yet
   await page.click('#resetBtn');
   await page.click('#playWhite');
   await expect(page.locator('#board img[src*="chesspieces"]')).toHaveCount(32);
+  await expect(page.locator('#showThreats')).toBeEnabled();
 
   expect(errors).toEqual([]);
 });

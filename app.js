@@ -27,7 +27,7 @@ const STRINGS = {
     he: {
         pageTitle: 'על המשמר! שחמט לילדים',
         appTitle: 'על המשמר!',
-        subtitle: 'שחמט לילדים: למדו לזהות איומים ולהגן על הכלים שלכם',
+        subtitle: 'למדו לזהות איומים ולהגן על הכלים שלכם',
         dedication: 'מוקדש באהבה לאדם וילף ❤️',
         yourTurn: 'התור שלכם!',
         computerThinking: 'המחשב חושב…',
@@ -99,7 +99,7 @@ const STRINGS = {
     en: {
         pageTitle: 'On Guard! Chess for Kids',
         appTitle: 'On Guard!',
-        subtitle: 'Chess for kids: learn to spot threats and protect your pieces',
+        subtitle: 'Learn to spot threats and protect your pieces',
         dedication: 'Dedicated with love to Adam Wilf ❤️',
         yourTurn: 'Your turn!',
         computerThinking: 'Computer is thinking…',
@@ -705,7 +705,8 @@ function updateHintInfo() {
     const level = LEVELS[difficulty];
     const limit = limitHints ? level.hintLimit : Infinity;
     const left = limit - hintsUsed;
-    $('#showThreats, #showDanger').prop('disabled', left <= 0);
+    // Before a game starts the board is empty while `game` already holds the start position
+    $('#showThreats, #showDanger').prop('disabled', left <= 0 || $.isEmptyObject(board.position()));
     $('#hintCount').prop('hidden', !(limit > 0 && limit < Infinity)).text(t('hintsLeft', { n: Math.max(left, 0) }));
     let text;
     if (limit === Infinity) text = t('hintInfoUnlimited');
