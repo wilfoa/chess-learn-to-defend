@@ -5,11 +5,12 @@
   "main": "index.html",
   "scripts": {
     "build": "node build-standalone.js",
-    "test": "playwright test",
+    "test": "playwright test --project=chromium --project=webkit --project=chrome --reporter=list && npm run test:firefox",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
-    "serve": "npx http-server -p 8080"
+    "serve": "npx http-server -p 8080",
+    "test:firefox": "docker run --rm --ipc=host -v \"$PWD\":/work -w /work mcr.microsoft.com/playwright:v$(node -p \"require('@playwright/test/package.json').version\")-noble npx playwright test --project=firefox --reporter=list --workers=2"
   },
   "keywords": [
     "chess",
